@@ -73,8 +73,15 @@ extension. The main header text was explicitly set to charcoal while preserving
 its other formatting. Effective-format readback and a Chrome screenshot confirmed
 the correction. Each of the four technical tabs was also visually checked: clear
 headers, frozen first row and empty data rows. A final permission read still
-returned only the owner entry. The automatic custom menu was not visible on the
-observed reload; its runtime invocation remains an external UI check.
+returned only the owner entry. A Sheets reload shortcut initially copied the
+first technical header across S:AD. Those twelve new headers were restored using
+an exact update; final cell and native-table metadata readback matched the complete
+schema and preserved all original A:R definitions. No existing lead data was changed.
+The custom menu appeared after a successful `onOpen` execution. Its real reply
+and stop prompts saved one synthetic contact with both sticky flags and two audit
+events, verified by a separate Google read; delivery remained empty. No message
+was sent. The project overview confirms the
+correct tracker container and Sheets-only OAuth capability.
 
 Chrome was verified as `sales@smartlearn.ca`. The blank bound project was named
 SmartLearn funnel adapter, capture-only source was installed and initialization
@@ -88,9 +95,20 @@ value into Apps Script properties; readback compared it without printing it.
 No plaintext key file was written and the checked Wrangler logs contained zero
 occurrences of the real value. Source, public config and commits contain no key.
 
-Web-app publication is a separate approval boundary; until its `/exec` deployment
-and signed synthetic-row test are verified, this is preparation/runtime setup,
-not a functioning live Google HTTP integration.
+After explicit action-time approval, Web app version 1 was published executing as
+`sales@smartlearn.ca` with Anyone network access and signed authentication. The
+`/exec` URL was stored in Cloudflare's private `APPS_SCRIPT_URL` binding. A real
+signed health call passed; an unsigned POST returned `auth`.
+
+With only the synthetic test gate temporarily enabled, three concurrent requests
+plus replay and status returned the same lead. Actual tracker readback across
+S2:S1000 found exactly one matching request, `01d102e8-6815-450c-a083-c9e12f076018`,
+lead `a99536b6-4c0e-4b43-bb15-ef8f409d7183`. Source/Notes label it synthetic,
+received date is a Sheet numeric date, headcount is number 1 and Meta lead ID is
+blank. The deployed Cloudflare status route independently reconciled that lead.
+The final health call verified capture/test/events/email/follow-ups all false and
+no delivery records. This proves signed Google capture and retry reconciliation;
+the public form remains deliberately disabled, and email/calendar are not live.
 
 ## Local/mocked checks
 
@@ -117,18 +135,21 @@ the existing Cloudflare Worker as version
 all seven deployed HTML/assets matched local build SHA-256 hashes. The deployed
 isolated Chrome smoke passed both steps, mobile fit, no POST from preview,
 neutral spoofed direct handoff, disabled APIs, private-path 404s and headers.
-This is real Cloudflare execution evidence, not a Google capture or delivery test.
+This is real Cloudflare execution evidence. Adding the Google URL binding created
+current version `6e60b725-d77d-4012-832d-3590b11c9078` with the same tested code;
+the deployed browser smoke was repeated successfully after that configuration
+change. The separate signed Google capture test is recorded above.
 
-Until explicitly recorded otherwise, a real Apps Script HTTP capture/replay row,
-inbox delivery, inbound reply monitor, calendar/provider webhook, booked appointment,
+The public live-form journey, inbox delivery, inbound reply monitor,
+calendar/provider webhook, booked appointment,
 Meta route/tracking/consent and paid campaign permissions/billing remain unverified.
 No authorized test mailbox or confirmed calendar was supplied. A connected account,
 saved secret, successful initialization or mocked test does not prove those links.
 
 Review deployment changes are documented in CLOUDFLARE.md with the immediate
 pre-fix version for rollback. The signed real-adapter test is a separate command;
-its opaque request ID must be checked against exactly one actual tracker row before
-claiming durable capture works live.
+its successful result and exactly-one-row readback are recorded above. Do not
+equate that isolated adapter test with an approved public launch.
 
 Runtime behavior was checked against official
 [Apps Script web-app guidance](https://developers.google.com/apps-script/guides/web),

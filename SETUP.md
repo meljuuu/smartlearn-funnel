@@ -8,8 +8,8 @@ dependencies in this guide still apply. The existing Vercel production site was
 not replaced and no DNS/custom-domain changes were made.
 
 Status as checked on October 26, 2026: the existing production site is a deliberate
-preview. The implementation is prepared for review; there is no verified live
-capture, email sender or calendar connection. No ads or follow-up delivery were
+preview. Signed Google synthetic capture is verified; public live-form capture,
+email delivery and calendar integration are not verified. No ads or follow-up delivery were
 enabled. No generated ZIP was supplied for this update.
 
 **Current setup progress:** the existing tracker has been prepared in place with
@@ -18,9 +18,12 @@ table, original A:R fields, date/numeric types, Status dropdown and sharing have
 been preserved. The capture-only source was installed in the bound
 [SmartLearn funnel adapter](https://script.google.com/u/3/home/projects/1bijcWxy-GWCcZHWwnnkLDhkjuo1ZDnFZ22QLunMJoFOzWMolPS0Tj_BE/edit)
 under `sales@smartlearn.ca`; `initializeSmartLearn` completed in Google. The signing
-secret is paired in private Apps Script properties and Cloudflare. This is setup
-evidence, not proof of a deployed web-app capture. Versioned `/exec` publication
-and a real synthetic-row check remain the next external verification steps.
+secret is paired in private Apps Script properties and Cloudflare. With the user's
+approval, version 1 of the Web app was published and its `/exec` URL stored in
+Cloudflare `APPS_SCRIPT_URL`. Three concurrent signed attempts and a replay created
+exactly one labeled synthetic row; the deployed Worker reconciled it through
+Google. The test gate was reset and every public/delivery flag remains false.
+This proves the signed adapter path, not a live public-form/email/calendar journey.
 
 ## Verified sources and repository
 
@@ -162,7 +165,7 @@ Vercel or permission to send as `info@smartlearn.ca`.
    `_SmartLearnDelivery`. These tabs inherit the workbook's existing access, with
    no new sharing. Do not edit or delete IDs, payload hashes or delivery keys.
 8. Choose **Deploy → New deployment → Select type → Web app**. Execute as the
-   approved account. The Vercel server needs unauthenticated network access to the
+   approved account. The Cloudflare/Vercel server needs unauthenticated network access to the
    endpoint, so **Who has access: Anyone** is required for this signed design.
    This exposes a signed API, not the tracker: unsigned calls return an auth error.
    This is an owner-approved security configuration decision. If organization policy
@@ -172,6 +175,12 @@ Vercel or permission to send as `info@smartlearn.ca`.
    Cloudflare `APPS_SCRIPT_URL` for the current review deployment. Do not use the editor or `/dev` URL. After script edits,
    choose **Deploy → Manage deployments → Edit → Version: New version → Deploy**.
    Saving source alone does not update the existing web-app deployment.
+
+Steps 1–9 above are already prepared/completed for capture under the linked bound
+project, including version 1 publication and the Cloudflare URL binding. V8 and
+Sheets-only OAuth capability were verified in Google. The optional manifest file
+is a configuration reference; its exact manifest contents were not manually
+installed/verified. Do not reinstall, rotate the key or create a second adapter.
 
 ### Exact field mapping
 
@@ -217,6 +226,15 @@ execution log contains only readiness flags and delivery counts. Delivery rows i
 details exist; `sending`/`uncertain` attempts remain held for manual reconciliation.
 Calendar confirmations use booking details rather than transport-event IDs as
 their delivery key, so equivalent provider notifications cannot send twice.
+
+The real signed test completed on October 26: request ID
+`01d102e8-6815-450c-a083-c9e12f076018`, lead ID
+`a99536b6-4c0e-4b43-bb15-ef8f409d7183`. An independent full website-ID-column read
+found exactly one matching row in the actual tracker. Dates/headcount, Source and
+separate Meta ID were correct. Cloudflare status reconciliation returned that same
+lead. Unsigned requests were rejected. A final signed health call confirmed
+`TEST_CAPTURE_ENABLED=false` as well as all public/email/events/follow-up flags
+false and zero delivery records. Keep the synthetic row as evidence.
 
 ## 2. Configure and test Vercel (project maintainer action)
 
@@ -311,14 +329,18 @@ is a booking contact only. None of those delivery settings were verified here.
    `Replied` or `Stopped` into that dropdown: those values are not currently allowed.
    Existing imported stop/reply labels are also recognized conservatively. A manual
    Booked/Qualified/etc. status holds prompts without inventing a calendar event.
-   The code for these controls is installed, but the menu did not appear in the
-   observed reload. Before relying on it, run `onOpen` from the bound editor and
-   check the Sheet again; if it still fails, inspect that execution and confirm
-   this project is the one opened through this tracker's Extensions menu.
+   The controls are installed. Running `onOpen` in Google completed and exposed
+   the custom menu. If it is absent on a later reload, run `onOpen` from the bound
+   editor and check again. The project overview confirms the existing tracker as
+   its container. Expand the browser window if the long menu is collapsed.
    The owner can also run `recordSmartLearnReply` / `recordSmartLearnStop` directly
    from that bound editor and complete the Sheet prompt. Verify the matching
-   `_SmartLearnContacts` row before any delivery run. This live UI path has not
-   yet been proven; automated inbound detection is also still unconfigured.
+   `_SmartLearnContacts` row before any delivery run. Both live controls were
+   tested with `smartlearn-suppression-test@example.invalid`: one contact row now
+   contains `{"replied":true,"stopped":true}`, with two audit rows and zero delivery
+   rows, independently read back through Google. Automated inbound detection is
+   still unconfigured; staff must record verified replies/stops through this menu
+   before a manual delivery run until an approved inbound workflow is connected.
 6. Once delivery and suppression checks pass and delivery is approved, an account
    owner can use **Apps Script → Triggers → Add Trigger →
    processSmartLearnNotifications → Time-driven** for the agreed processing
@@ -354,7 +376,8 @@ the private contact state plus tracker status; a stop request must remain stoppe
    Calendar, use **Create → Appointment schedule**, configure approved details,
    then **Booking pages → Share → Copy link** (if the account supports appointment
    schedules). Otherwise obtain the link from the team's actual approved provider.
-   Connect that public HTTPS URL as Vercel `BOOKING_URL` and Apps Script
+   Connect that public HTTPS URL as Cloudflare `BOOKING_URL` (or Vercel if separately
+   selected as the future destination) and Apps Script
    `BOOKING_URL`; email contact alone does not create a calendar.
 2. Choose one confirmation system. Default `BOOKING_CONFIRMATION_SYSTEM=calendar`
    leaves confirmations/reschedule/cancel delivery to the real calendar. Set
@@ -365,7 +388,8 @@ the private contact state plus tracker status; a stop request must remain stoppe
    Pass that opaque lead ID through the provider's supported private/custom
    metadata or reconcile in the owner workflow; never expose prospect details in
    a URL or guess bookings by email alone. No provider has been chosen or connected.
-4. In Vercel set `EVENTS_ENABLED=true` and a separate `EVENT_INGEST_SECRET`. In
+4. In the chosen deployment (currently Cloudflare) set `EVENTS_ENABLED=true` and
+   a separate `EVENT_INGEST_SECRET` only after verified event testing is authorized. In
    Apps Script set `EVENTS_ENABLED=true`. The automation calls
    `POST https://<approved-deployment>/api/events` with header
    `Authorization: Bearer <EVENT_INGEST_SECRET>` and JSON such as:

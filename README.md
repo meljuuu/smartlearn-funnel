@@ -5,6 +5,12 @@ follow-ups and calendar integration are **disabled by default**.
 
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 
+The existing Google tracker and signed Web app are connected. A real synthetic
+capture with three concurrent attempts and a replay produced exactly one row;
+Cloudflare status reconciliation and manual reply/stop controls also passed.
+Public capture and recipient delivery remain off pending approved settings and
+end-to-end acceptance. See [verification evidence](VERIFICATION.md).
+
 Deploy updates to the authenticated Cloudflare account with
 `npm run deploy:cloudflare`. The Worker serves the existing pages and reuses the
 same server handlers; [Cloudflare setup](CLOUDFLARE.md) covers runtime settings.

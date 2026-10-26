@@ -10,14 +10,18 @@ campaign budget or ad delivery settings were changed.
 
 The deployment is a real Cloudflare Worker with static assets and both existing
 API routes. It is **deliberately in preview mode**: no lead capture, email, events,
-follow-ups or bookings are enabled by this deployment. It is not a connected
-calendar or a verified Sheets integration.
+follow-ups or bookings are enabled by the public form. It is not a connected
+calendar. The signed Google adapter has now passed a real synthetic capture test;
+the public live-form capture journey is still disabled and unverified.
 
 Current Google preparation: the existing tracker schema is ready, the bound
 `SmartLearn funnel adapter` project is installed and initialized under
 `sales@smartlearn.ca`, and `APPS_SCRIPT_SECRET` is paired privately with this Worker.
-The pending step is publication of its versioned Web app `/exec` URL and verification
-of a real synthetic row. Installation/initialization alone does not prove HTTP capture.
+With the user's action-time approval, Web app version 1 was published executing as
+`sales@smartlearn.ca` with Anyone network access and HMAC authentication. Its `/exec`
+URL is stored in this Worker's private `APPS_SCRIPT_URL` binding. Three concurrent
+synthetic attempts, status and replay produced exactly one actual tracker row.
+The final health check confirmed every delivery/capture/test flag false.
 
 ## Updating it
 
@@ -63,7 +67,7 @@ Variables and Secrets**, configure:
 | `FUNNEL_MODE` | Text | `preview` now; `live` only after approved test configuration |
 | `CAPTURE_ENABLED` | Text | `false` now; `true` for controlled capture testing |
 | `EVENTS_ENABLED` | Text | `false` until the verified calendar/reply/stop adapter is configured |
-| `APPS_SCRIPT_URL` | Text or Secret | Approved Apps Script web-app `/exec` URL |
+| `APPS_SCRIPT_URL` | Secret | Already configured: the approved version 1 Web app `/exec` URL |
 | `APPS_SCRIPT_SECRET` | Secret | Already generated and paired with the bound Apps Script property; do not replace during setup |
 | `ALLOWED_ORIGINS` | Text | Already configured in Wrangler: `https://smartlearn-funnel.polarisjumel.workers.dev`; add only approved exact HTTPS origins, comma-separated |
 | `PRIVACY_POLICY_URL` | Text | SmartLearn's approved public HTTPS privacy-policy URL |
@@ -94,14 +98,14 @@ form and all recipient delivery remain disabled.
 
 ## Verify Google without enabling the public form
 
-1. Complete the prepared Web app deployment in the bound
+1. The Web app deployment is complete in the bound
    [SmartLearn funnel adapter](https://script.google.com/u/3/home/projects/1bijcWxy-GWCcZHWwnnkLDhkjuo1ZDnFZ22QLunMJoFOzWMolPS0Tj_BE/edit):
    Web app, execute as the approved `sales@smartlearn.ca` account, access Anyone
    for the signed server endpoint. Owner approval of that API access is required;
-   the Sheet's sharing is not changed. Do not substitute `/dev` or an editor URL.
-2. Store the resulting `/exec` URL as `APPS_SCRIPT_URL` in this Worker's
-   **Settings → Variables and Secrets**. All required signing-key pairing is
-   already prepared. Keep `FUNNEL_MODE=preview`, both capture flags false and mail off.
+   the Sheet's sharing was not changed. Do not substitute `/dev` or an editor URL.
+2. The resulting `/exec` URL is already stored as `APPS_SCRIPT_URL` in this Worker's
+   **Settings → Variables and Secrets**. Signing-key pairing is complete.
+   Keep `FUNNEL_MODE=preview`, both capture flags false and mail off.
 3. Run `npm run verify:google` in your own interactive terminal. It asks for the
    `/exec` URL and a hidden signing-key input, then prints only readiness flags and
    aggregate delivery counts. `inspectSmartLearnSetup` in Google logs the same
@@ -143,26 +147,37 @@ The October 26 tested code is commit
 `a3d38935-8de4-42f0-bbf1-7288f17d321e`. The public config's
 `X-SmartLearn-Build` header matches that commit. All seven deployed HTML/asset
 files were downloaded and their SHA-256 hashes matched the generated build.
+Adding the Google URL binding created current Worker version
+`6e60b725-d77d-4012-832d-3590b11c9078` with the same tested code/build header.
 Later documentation-only commits do not change that deployed code revision.
 
 `npm test` passes 28 checks, including Cloudflare adapter tests for public
 config/invalid live mode, Request/Response capture/replay/status using the signed
 mock adapter, trusted IP hashing, body limits, root routing and disabled APIs.
 Wrangler's deployment dry run bundled successfully; deployment completed using
-the actual Cloudflare runtime. Runtime integrations remain unconfigured.
+the actual Cloudflare runtime. Google capture is connected for signed integration
+testing; recipient delivery, public live capture and calendar remain disabled.
 
 The deployed smoke check covers the landing page, mobile overflow, both form steps,
 no-send preview handoff, neutral direct `?mode=received` visits, disabled capture/
 event JSON responses, security headers, public config and 404s for private source/
-environment paths. No test inquiry is sent to the live tracker or any mailbox.
+environment paths. The browser preview sends nothing. Separately, one explicitly
+labeled synthetic inquiry was saved through the real signed Google adapter; no
+mailbox received a development message.
 Local smoke script/screenshots are under ignored `.review/`.
 
 The browser suite now has 15 passing checks, including headcount validation,
 server rejection correction, pending-request reload recovery and return from
 handoff. Local tests also cover partial calendar writes, semantic confirmation
 deduplication, observable blocked delivery, manual suppression and fresh server/
-adapter instances using shared durable mock storage. These remain mocked until
-the signed real-adapter check above succeeds.
+adapter instances using shared durable mock storage. Calendar and mail behavior
+remain mocked. The signed real-adapter test also passed: request
+`01d102e8-6815-450c-a083-c9e12f076018`, lead
+`a99536b6-4c0e-4b43-bb15-ef8f409d7183`, exactly one matching row across S2:S1000,
+correct synthetic Source, numeric team size and real Sheet date. Cloudflare's
+deployed status route reconciled that lead. Unsigned Google POSTs returned `auth`;
+public new captures still returned 503 `capture_disabled`. Final signed health:
+capture/test/events/email/follow-ups all false, no delivery records.
 
 ## Rollback
 
@@ -178,6 +193,12 @@ does not undo Google Sheet records, script properties or the Apps Script deploym
 Keep those records/IDs; restore Google code through a new versioned deployment only
 if required. An older Worker version may lack the signing-secret binding; the
 encrypted recovery helper can restore that binding without changing the key.
+
+To undo only the new Google URL binding while retaining the tested code fixes,
+roll back to `a3d38935-8de4-42f0-bbf1-7288f17d321e`. That version still has the
+paired signing key but no Google endpoint URL. The separately published Google
+Web app can be archived by its owner through **Deploy → Manage deployments**;
+do not delete tracker IDs, test evidence or suppression records during rollback.
 
 The Cloudflare dependency installation is pinned in `package-lock.json`. A patched
 Undici override resolves the deployment tooling's transitive audit findings;
