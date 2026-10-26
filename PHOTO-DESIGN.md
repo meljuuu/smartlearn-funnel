@@ -1,5 +1,10 @@
 # SmartLearn photographic redesign
 
+**Current imagery:** the generated scenes described below have been superseded
+by Pexels stock photographs. See [STOCK-PHOTOS.md](STOCK-PHOTOS.md) for the exact
+photographers, source pages, checked license, delivery sizes and verification.
+The original design/generation record is retained below as historical provenance.
+
 ## Motion update
 
 `assets/motion.js` progressively enhances the landing page with one-time section

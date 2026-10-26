@@ -9,7 +9,9 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     const image = page.locator('.hero-photo');
     await expect(image).toBeVisible();
     expect(await image.evaluate(el => el.complete && el.naturalWidth > 0 && el.width <= innerWidth)).toBe(true);
-    await expect(image).toHaveAttribute('width', '1600'); await expect(image).toHaveAttribute('height', '900');
+    await expect(image).toHaveAttribute('width', '1600'); await expect(image).toHaveAttribute('height', '1067');
+    await expect(image).toHaveAttribute('src', 'assets/stock-workshop-hero-1600.jpg');
+    await expect(page.locator('.problem-photo img')).toHaveAttribute('src', 'assets/stock-workshop-detail-1000.jpg');
     const hero = await page.locator('.hero').boundingBox(), handoff = await page.locator('.hero-handoff').boundingBox();
     expect(handoff.y).toBeLessThan(hero.y + hero.height);
     await expect(page.locator('.step-number')).toHaveText(['01', '02', '03']);

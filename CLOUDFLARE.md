@@ -2,6 +2,14 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
+Current stock-photo update: generated workshop scenes are replaced by locally
+hosted Pexels photographs; see [STOCK-PHOTOS.md](STOCK-PHOTOS.md). Design,
+animations and integration settings are retained. Build plus eight targeted
+layout/motion browser checks cover this asset-only update. The preceding deployment
+is Worker version `52c83db4-b0a5-4195-8ff6-a05c068cfefa`, commit
+`1a18945713dc9f5fc4cf282f15a3d18bb401bf9d`. Restore it with Deployments → Rollback
+or `npx wrangler rollback 52c83db4-b0a5-4195-8ff6-a05c068cfefa` if necessary.
+
 Motion update: button feedback, a brief hero entrance and one-time scroll reveals
 are implemented in `assets/design.css` and `assets/motion.js`. Reduced motion and
 keyboard focus are respected; content remains visible without the script.

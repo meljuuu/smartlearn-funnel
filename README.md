@@ -12,9 +12,10 @@ See [email authorization](EMAIL-SETUP.md) for the chosen sales mailbox setup.
 
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 
-The landing page now uses original workshop photography, a bold dark hero,
+The landing page now uses licensed Pexels workshop photography, a bold dark hero,
 overlapping sections, yellow process numbers and a polished light form panel.
-[Current design notes](PHOTO-DESIGN.md) record the assets, prompts and checks;
+[Stock-photo sources](STOCK-PHOTOS.md) record current imagery and license checks;
+[design notes](PHOTO-DESIGN.md) preserve the composition and earlier asset history;
 [earlier research](DESIGN-RESEARCH.md) preserves the 35-site reference log.
 No new dependencies or integration settings are required. Current design QA
 covers 30 Node / 27 browser tests. Buttons and sections now include restrained
