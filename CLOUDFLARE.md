@@ -138,6 +138,13 @@ the integrations work. No real-prospect development messages are permitted.
 
 ## Verification
 
+The October 26 tested code is commit
+`bff8ec4e89f09e4fdb3771b91638f35740019d1b`, deployed as Worker version
+`a3d38935-8de4-42f0-bbf1-7288f17d321e`. The public config's
+`X-SmartLearn-Build` header matches that commit. All seven deployed HTML/asset
+files were downloaded and their SHA-256 hashes matched the generated build.
+Later documentation-only commits do not change that deployed code revision.
+
 `npm test` passes 28 checks, including Cloudflare adapter tests for public
 config/invalid live mode, Request/Response capture/replay/status using the signed
 mock adapter, trusted IP hashing, body limits, root routing and disabled APIs.

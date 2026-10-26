@@ -68,6 +68,14 @@ A1:AD1000, preserving original types. Four private adapter tabs were added in th
 same workbook. Header/data/format readback passed; original A:R values were not
 rewritten, and sharing was not widened. No lead row was appended by connector work.
 
+Rendering revealed white header text on a white native-table header after the
+extension. The main header text was explicitly set to charcoal while preserving
+its other formatting. Effective-format readback and a Chrome screenshot confirmed
+the correction. Each of the four technical tabs was also visually checked: clear
+headers, frozen first row and empty data rows. A final permission read still
+returned only the owner entry. The automatic custom menu was not visible on the
+observed reload; its runtime invocation remains an external UI check.
+
 Chrome was verified as `sales@smartlearn.ca`. The blank bound project was named
 SmartLearn funnel adapter, capture-only source was installed and initialization
 completed in Google. The Google editor parsed the manual suppression/diagnostic
@@ -102,6 +110,14 @@ not a functioning live Google HTTP integration.
   `git diff --check` passes. Dependency audit reports zero vulnerabilities.
 
 ## External checks still requiring evidence
+
+The tested code commit `bff8ec4e89f09e4fdb3771b91638f35740019d1b` was deployed to
+the existing Cloudflare Worker as version
+`a3d38935-8de4-42f0-bbf1-7288f17d321e`. `X-SmartLearn-Build` matched the commit;
+all seven deployed HTML/assets matched local build SHA-256 hashes. The deployed
+isolated Chrome smoke passed both steps, mobile fit, no POST from preview,
+neutral spoofed direct handoff, disabled APIs, private-path 404s and headers.
+This is real Cloudflare execution evidence, not a Google capture or delivery test.
 
 Until explicitly recorded otherwise, a real Apps Script HTTP capture/replay row,
 inbox delivery, inbound reply monitor, calendar/provider webhook, booked appointment,

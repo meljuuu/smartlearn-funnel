@@ -311,6 +311,14 @@ is a booking contact only. None of those delivery settings were verified here.
    `Replied` or `Stopped` into that dropdown: those values are not currently allowed.
    Existing imported stop/reply labels are also recognized conservatively. A manual
    Booked/Qualified/etc. status holds prompts without inventing a calendar event.
+   The code for these controls is installed, but the menu did not appear in the
+   observed reload. Before relying on it, run `onOpen` from the bound editor and
+   check the Sheet again; if it still fails, inspect that execution and confirm
+   this project is the one opened through this tracker's Extensions menu.
+   The owner can also run `recordSmartLearnReply` / `recordSmartLearnStop` directly
+   from that bound editor and complete the Sheet prompt. Verify the matching
+   `_SmartLearnContacts` row before any delivery run. This live UI path has not
+   yet been proven; automated inbound detection is also still unconfigured.
 6. Once delivery and suppression checks pass and delivery is approved, an account
    owner can use **Apps Script → Triggers → Add Trigger →
    processSmartLearnNotifications → Time-driven** for the agreed processing
