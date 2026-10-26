@@ -9,7 +9,7 @@ async function business(page) {
   await page.locator('#business').fill('Test Plumbing');
   await page.locator('#industry').selectOption('Plumbing');
   await page.locator('#area').selectOption('Other');
-  await page.locator('#team').selectOption('1');
+  await page.locator('#team').fill('1');
   await page.locator('#challenge').selectOption('Paperwork and repeated data entry');
 }
 async function contact(page) {
@@ -106,6 +106,45 @@ test('preview submits no requests and invalid live config is visibly disabled', 
   await expect(page.locator('#form-errors')).toContainText('disabled');
   await page.locator('#next-step').click();
   expect(writes).toBe(0);
+});
+test('server field rejection allows correction using the same request ID', async ({ page }) => {
+  await configure(page); const captures = [];
+  await page.route('**/api/leads', route => {
+    const data = route.request().postDataJSON();
+    if (!data.action) captures.push(data);
+    if (captures.length === 1 && !data.action) return route.fulfill({ status: 422, json: { ok: false, code: 'validation', errors: { team_size: 'Enter a whole number.' } } });
+    return route.fulfill({ json: { ok: true, state: 'captured', leadId } });
+  });
+  await page.goto('/'); await business(page); await page.locator('#next-step').click(); await contact(page); await page.locator('#submit-button').click();
+  await expect(page.locator('#team')).toBeFocused(); await expect(page.locator('#team')).toBeEnabled();
+  await page.locator('#team').fill('12'); await page.locator('#next-step').click(); await page.locator('#submit-button').click();
+  await expect(page).toHaveURL(/thank-you/); expect(captures).toHaveLength(2);
+  expect(captures[1].request_id).toBe(captures[0].request_id); expect(captures[1].team_size).toBe('12');
+});
+test('reloaded pending inquiry is reconciled before any new capture attempt', async ({ page }) => {
+  await configure(page); let captures = 0;
+  await page.route('**/api/leads', route => {
+    const data = route.request().postDataJSON();
+    if (!data.action) { captures++; return route.abort('timedout'); }
+    return route.fulfill({ json: { ok: true, state: 'captured', leadId } });
+  });
+  await page.goto('/'); await business(page); await page.locator('#next-step').click(); await contact(page); await page.locator('#submit-button').click();
+  await expect(page.locator('#check-status')).toBeVisible(); await page.reload();
+  await expect(page.locator('#business')).toBeDisabled(); await page.locator('#check-status').click();
+  await expect(page).toHaveURL(/thank-you/); await expect(page.locator('#request-status')).toContainText('INQUIRY RECEIVED'); expect(captures).toBe(1);
+});
+test('returning from handoff permits a genuinely new request with a new ID', async ({ page }) => {
+  await configure(page); const ids = [];
+  await page.route('**/api/leads', route => { const data = route.request().postDataJSON(); if (!data.action) ids.push(data.request_id); return route.fulfill({ json: { ok: true, state: 'captured', leadId } }); });
+  await page.goto('/'); await business(page); await page.locator('#next-step').click(); await contact(page); await page.locator('#submit-button').click();
+  await expect(page).toHaveURL(/thank-you/); await page.goBack();
+  await expect(page.locator('#business')).toBeEnabled(); await business(page); await page.locator('#next-step').click(); await contact(page); await page.locator('#submit-button').click();
+  await expect(page).toHaveURL(/thank-you/); expect(ids).toHaveLength(2); expect(ids[0]).not.toBe(ids[1]);
+});
+test('headcount rejects fractions and zero while accepting solo teams and larger teams', async ({ page }) => {
+  await page.goto('/'); await business(page);
+  for (const count of ['0', '1.5']) { await page.locator('#team').fill(count); await page.locator('#next-step').click(); await expect(page.locator('#team')).toBeFocused(); await expect(page.locator('[data-step="1"]')).toBeVisible(); }
+  await page.locator('#team').fill('51'); await page.locator('#next-step').click(); await expect(page.locator('#name')).toBeFocused();
 });
 for (const width of [320, 390, 1440]) {
   test(`landing, both form steps and handoff fit at ${width}px`, async ({ page }) => {

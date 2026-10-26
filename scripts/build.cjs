@@ -12,4 +12,6 @@ const config = { previewMode: mode === 'preview', leadEndpoint: '/api/leads', bo
 fs.writeFileSync('public/assets/config.js', `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`);
 fs.mkdirSync('.review', { recursive: true });
 fs.writeFileSync('.review/SmartLearn.gs', fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + fs.readFileSync('apps-script/SmartLearn.gs', 'utf8'));
-console.log(`Built ${mode} site in public/; Apps Script installation file: .review/SmartLearn.gs`);
+const capture = fs.readFileSync('apps-script/SmartLearn.gs', 'utf8').split('function slMailConfig()')[0];
+fs.writeFileSync('.review/SmartLearn-Capture.gs', fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + capture);
+console.log(`Built ${mode} site in public/; capture-only install: .review/SmartLearn-Capture.gs; optional mail bundle: .review/SmartLearn.gs`);

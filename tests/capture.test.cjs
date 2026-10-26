@@ -44,7 +44,7 @@ test('legacy records and notes survive installation and capture; missing or dupl
   assert.equal(h.post({ action: 'capture', lead: lead(), clientKey: 'test' }).ok, false);
 });
 function response() { return { headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(raw) { this.body = JSON.parse(raw); } }; }
-const env = { CAPTURE_ENABLED: 'true', PRIVACY_POLICY_URL: 'https://example.invalid/privacy', ALLOWED_ORIGINS: 'https://example.invalid', APPS_SCRIPT_URL: 'https://script.google.com/macros/s/test/exec', APPS_SCRIPT_SECRET: 'test-only-signing-secret-at-least-32-characters' };
+const env = { FUNNEL_MODE: 'live', CAPTURE_ENABLED: 'true', PRIVACY_POLICY_URL: 'https://example.invalid/privacy', ALLOWED_ORIGINS: 'https://example.invalid', APPS_SCRIPT_URL: 'https://script.google.com/macros/s/test/exec', APPS_SCRIPT_SECRET: 'test-only-signing-secret-at-least-32-characters' };
 test('Vercel handler rejects invalid origin/body/config and never reports malformed or failed upstream as captured', async () => {
   let calls = 0;
   const fetcher = async () => { calls++; return { ok: true, json: async () => ({ ok: true }) }; };

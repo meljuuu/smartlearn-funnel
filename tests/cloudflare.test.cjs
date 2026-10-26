@@ -19,7 +19,7 @@ test('Cloudflare serves only public config, preserves neutral modes and applies 
 test('Cloudflare adapts real Request/Response to capture contract with platform IP and duplicate reconciliation', async () => {
   const { handleApi } = await import('../cloudflare/worker.mjs');
   const script = scriptHarness(), data = lead();
-  const settings = { CAPTURE_ENABLED: 'true', PRIVACY_POLICY_URL: origin + '/privacy', ALLOWED_ORIGINS: origin, APPS_SCRIPT_URL: 'https://script.google.com/macros/s/test/exec', APPS_SCRIPT_SECRET: script.props.APPS_SCRIPT_SECRET };
+  const settings = { FUNNEL_MODE: 'live', CAPTURE_ENABLED: 'true', PRIVACY_POLICY_URL: origin + '/privacy', ALLOWED_ORIGINS: origin, APPS_SCRIPT_URL: 'https://script.google.com/macros/s/test/exec', APPS_SCRIPT_SECRET: script.props.APPS_SCRIPT_SECRET };
   const requests = [];
   const fetcher = async (url, options) => {
     requests.push(JSON.parse(JSON.parse(options.body).data));

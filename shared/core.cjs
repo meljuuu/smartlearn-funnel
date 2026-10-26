@@ -4,7 +4,6 @@ var SmartLearnCore = (() => {
   const choices = {
     business_type: ['HVAC', 'Plumbing', 'Electrical', 'Landscaping', 'Cleaning', 'Roofing', 'Renovation', 'Property maintenance', 'Other'],
     service_area: ['Surrey', 'Langley', 'Surrey and Langley', 'Other'],
-    team_size: ['1', '2–5', '6–10', '11–25', '26–50', '51+'],
     main_challenge: ['Customer inquiries and follow-ups', 'Scheduling and coordination', 'Quotes and invoicing', 'Paperwork and repeated data entry', 'Other administrative work']
   };
   const attributionKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ad_id', 'adset_id', 'campaign_id'];
@@ -16,7 +15,7 @@ var SmartLearnCore = (() => {
   function validateLead(input) {
     const errors = {}, value = {};
     if (!input || typeof input !== 'object' || Array.isArray(input)) return { errors: { form: 'Invalid request.' } };
-    if (!uuid.test(input.request_id || '')) errors.request_id = 'A valid request ID is required.';
+    if (typeof input.request_id !== 'string' || !uuid.test(input.request_id)) errors.request_id = 'A valid request ID is required.';
     else value.request_id = input.request_id.toLowerCase();
     for (const [key, max] of Object.entries({ business_name: 160, full_name: 120, email: 180, phone: 40 })) {
       const text = typeof input[key] === 'string' ? input[key].trim() : '';
@@ -25,8 +24,12 @@ var SmartLearnCore = (() => {
     }
     value.email = value.email.toLowerCase();
     if (!email.test(value.email)) errors.email = 'Enter a valid email address.';
-    for (const [key, allowed] of Object.entries(choices)) {
-      if (!allowed.includes(input[key])) errors[key] = 'Choose one of the available options.';
+    for (const key of ['business_type', 'service_area', 'team_size', 'main_challenge']) {
+      if (key === 'team_size') {
+        // Match the tracker's DOUBLE column without inventing a size qualification rule.
+        if (typeof input.team_size !== 'string' || !/^[1-9]\d{0,5}$/.test(input.team_size)) errors.team_size = 'Enter the number of people, including you (a whole number).';
+        else value.team_size = input.team_size;
+      } else if (!choices[key].includes(input[key])) errors[key] = 'Choose one of the available options.';
       else value[key] = input[key];
     }
     if (input.contact_consent !== true) errors.contact_consent = 'Acknowledge contact about this inquiry.';
@@ -70,6 +73,30 @@ var SmartLearnCore = (() => {
     return count;
   }
   function promptsAllowed(state) { return !state.stopped && !state.replied && !state.booked && !state.cancelled && !state.manualHold; }
-  return { choices, attributionKeys, uuid, email, https, validateLead, cell, message, businessDaysElapsed, promptsAllowed };
+  function validateEvent(input) {
+    const errors = {}, value = {};
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return { errors: { event: 'Invalid event.' } };
+    for (const [key, max] of Object.entries({ type: 20, eventId: 180, email: 180, leadId: 36, occurredAt: 40, host: 120, dateTime: 40, timeZone: 80, meetingUrl: 500, rescheduleUrl: 500, bookingId: 180 })) {
+      if (input[key] === undefined) continue;
+      if (typeof input[key] !== 'string' || !input[key].trim() || input[key].length > max || /[\x00-\x1f\x7f]/.test(input[key])) errors[key] = 'Invalid event field.';
+      else value[key] = input[key].trim();
+    }
+    if (!['booked', 'rescheduled', 'cancelled', 'replied', 'stopped'].includes(value.type)) errors.type = 'Unknown event.';
+    if (!/^[\w:.-]{1,180}$/.test(value.eventId || '')) errors.eventId = 'Stable event ID required.';
+    if (!email.test(value.email || '')) errors.email = 'Valid contact email required.';
+    else value.email = value.email.toLowerCase();
+    const instant = text => typeof text === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(text) && Number.isFinite(Date.parse(text));
+    if (!instant(value.occurredAt) || Date.parse(value.occurredAt) > Date.now() + 300000) errors.occurredAt = 'Provider occurrence time with UTC offset required.';
+    if (value.leadId && !uuid.test(value.leadId)) errors.leadId = 'Valid lead ID required.';
+    if (['booked', 'rescheduled', 'cancelled'].includes(value.type) && (!uuid.test(value.leadId || '') || !value.bookingId)) errors.bookingId = 'Matched lead and booking IDs required.';
+    if (['booked', 'rescheduled'].includes(value.type)) {
+      if (!instant(value.dateTime)) errors.dateTime = 'Scheduled instant with UTC offset required.';
+      if (!/^(?:UTC|[A-Za-z_+-]+\/[A-Za-z0-9_+./-]+)$/.test(value.timeZone || '')) errors.timeZone = 'IANA time zone required.';
+    }
+    for (const key of ['meetingUrl', 'rescheduleUrl']) if (value[key] && !https(value[key])) errors[key] = 'HTTPS URL required.';
+    if (value.leadId) value.leadId = value.leadId.toLowerCase();
+    return { value, errors };
+  }
+  return { choices, attributionKeys, uuid, email, https, validateLead, validateEvent, cell, message, businessDaysElapsed, promptsAllowed };
 })();
 if (typeof module !== 'undefined') module.exports = SmartLearnCore;

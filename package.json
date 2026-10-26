@@ -10,8 +10,9 @@
     "start": "node scripts/dev.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:browser": "playwright test",
-    "deploy:cloudflare": "wrangler deploy",
-    "dev:cloudflare": "wrangler dev"
+    "deploy:cloudflare": "node scripts/deploy-cloudflare.cjs",
+    "dev:cloudflare": "wrangler dev",
+    "verify:google": "node scripts/verify-google.cjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

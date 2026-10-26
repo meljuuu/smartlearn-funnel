@@ -66,7 +66,7 @@ export default {
           privacyUrl: core.https(env.PRIVACY_POLICY_URL) ? env.PRIVACY_POLICY_URL : '',
           bookingEmail: 'info@smartlearn.ca'
         };
-        return secure(new Response(request.method === 'HEAD' ? null : `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config)});\n`, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' } }));
+        return secure(new Response(request.method === 'HEAD' ? null : `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config)});\n`, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', 'X-SmartLearn-Build': /^[a-f0-9]{40}$/.test(env.BUILD_COMMIT || '') ? env.BUILD_COMMIT : 'unversioned' } }));
       }
       // Explicit root mapping preserves the existing .html routes and link targets.
       if (url.pathname === '/') { url.pathname = '/index.html'; request = new Request(url, request); }

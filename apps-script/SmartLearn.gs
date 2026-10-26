@@ -36,6 +36,9 @@ function slTechnical(book, name, headers) {
 function initializeSmartLearn() {
   var lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
+    var p = slProperties();
+    var defaults = { SPREADSHEET_ID: '1quWPUluIktsa4zmWS6vS_877v_AgSl6nXmENep6AuVU', LEADS_SHEET_NAME: 'Leads & Discovery Calls', CAPTURE_ENABLED: 'false', TEST_CAPTURE_ENABLED: 'false', EVENTS_ENABLED: 'false', EMAIL_ENABLED: 'false', FOLLOWUPS_ENABLED: 'false', BOOKING_CONFIRMATION_SYSTEM: 'calendar' };
+    Object.keys(defaults).forEach(function(key) { if (p.getProperty(key) === null) p.setProperty(key, defaults[key]); });
     var book = slBook(), sheet = slLeads(book), headers = slHeaders(sheet);
     SL_BASE.forEach(function(name) { if (headers.filter(function(h) { return h === name; }).length !== 1) throw new Error('Existing tracker headers do not match. Stop and inspect mapping.'); });
     var missing = SL_EXTRA.filter(function(name) { return headers.indexOf(name) < 0; });
@@ -51,6 +54,12 @@ function initializeSmartLearn() {
     SpreadsheetApp.flush();
   } finally { lock.releaseLock(); }
 }
+function slAppend(sheet, values) {
+  var row = sheet.getLastRow() + 1;
+  if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), Math.max(100, row - sheet.getMaxRows()));
+  sheet.getRange(row, 1, 1, values.length).setValues([values]);
+  return row;
+}
 function slTable(book, name) {
   var sheet = book.getSheetByName(name);
   if (!sheet) throw new Error('schema');
@@ -58,14 +67,15 @@ function slTable(book, name) {
 }
 function slFind(sheet, column, key) {
   if (sheet.getLastRow() < 2) return 0;
-  var values = sheet.getRange(2, column, sheet.getLastRow() - 1, 1).getValues();
-  for (var i = 0; i < values.length; i++) if (String(values[i][0]) === key) return i + 2;
-  return 0;
+  var values = sheet.getRange(2, column, sheet.getLastRow() - 1, 1).getValues(), found = 0;
+  for (var i = 0; i < values.length; i++) if (String(values[i][0]) === key) { if (found) throw new Error('duplicate_key'); found = i + 2; }
+  return found;
 }
 function slReadState(sheet, key) { var row = slFind(sheet, 1, key); return row ? JSON.parse(sheet.getRange(row, 2).getValue() || '{}') : {}; }
 function slWriteState(sheet, key, state) {
-  var row = slFind(sheet, 1, key) || sheet.getLastRow() + 1;
-  sheet.getRange(row, 1, 1, 2).setValues([[SmartLearnCore.cell(key), JSON.stringify(state)]]);
+  var row = slFind(sheet, 1, key), values = [SmartLearnCore.cell(key), JSON.stringify(state)];
+  if (row) sheet.getRange(row, 1, 1, 2).setValues([values]);
+  else slAppend(sheet, values);
 }
 function slHash(text) { return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8).map(function(b) { return ('0' + ((b + 256) % 256).toString(16)).slice(-2); }).join(''); }
 function slEqual(a, b) { if (a.length !== b.length) return false; var diff = 0; for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i); return diff === 0; }
@@ -110,17 +120,22 @@ function doPost(e) {
 }
 function slHandle(data) {
   var book = slBook(), sheet = slLeads(book), headers = slCheckHeaders(sheet);
+  if (data.action === 'health') return slHealth(book);
+  if (data.action === 'end_test') { slProperties().setProperty('TEST_CAPTURE_ENABLED', 'false'); return { ok: true }; }
   if (data.action === 'event') return slEvent(book, sheet, headers, data.event);
-  if (!['capture', 'status'].includes(data.action) || !data.lead || !SmartLearnCore.uuid.test(data.lead.request_id || '')) return { ok: false, code: 'validation' };
+  if (!['capture', 'test_capture', 'status'].includes(data.action) || !data.lead || typeof data.lead.request_id !== 'string' || !SmartLearnCore.uuid.test(data.lead.request_id)) return { ok: false, code: 'validation' };
   var row = slFind(sheet, headers.indexOf('Website request ID') + 1, data.lead.request_id.toLowerCase());
   if (data.action === 'status') {
     if (!slRate(String(data.clientKey || ''), 'status')) return { ok: false, code: 'rate_limited' };
     return row ? { ok: true, state: 'captured', leadId: String(sheet.getRange(row, headers.indexOf('Website lead ID') + 1).getValue()) } : { ok: true, state: 'not_found' };
   }
-  if (slProperties().getProperty('CAPTURE_ENABLED') !== 'true') return { ok: false, code: 'capture_disabled' };
+  var testing = data.action === 'test_capture';
+  if (slProperties().getProperty(testing ? 'TEST_CAPTURE_ENABLED' : 'CAPTURE_ENABLED') !== 'true') return { ok: false, code: testing ? 'test_disabled' : 'capture_disabled' };
   var checked = SmartLearnCore.validateLead(data.lead);
   if (Object.keys(checked.errors).length) return { ok: false, code: 'validation' };
-  var lead = checked.value, hash = slHash(JSON.stringify(lead));
+  var lead = checked.value;
+  if (testing && (lead.full_name !== 'SYNTHETIC TEST - DO NOT CONTACT' || lead.email !== 'smartlearn-synthetic@example.invalid' || lead.business_name.indexOf('SYNTHETIC INTEGRATION TEST ') !== 0 || lead.phone !== '')) return { ok: false, code: 'validation' };
+  var hash = slHash((testing ? 'synthetic.' : '') + JSON.stringify(lead));
   if (row) {
     if (String(sheet.getRange(row, headers.indexOf('Website payload hash') + 1).getValue()) !== hash) return { ok: false, code: 'conflict' };
     return { ok: true, leadId: String(sheet.getRange(row, headers.indexOf('Website lead ID') + 1).getValue()) };
@@ -128,23 +143,26 @@ function slHandle(data) {
   if (!slRate(String(data.clientKey || ''), 'capture')) return { ok: false, code: 'rate_limited' };
   var leadId = Utilities.getUuid(), now = new Date().toISOString(), a = lead.attribution;
   var values = {
-    'Date received': now, 'Source': 'Website funnel', 'Meta lead ID': '', 'Name': lead.full_name,
+    'Date received': new Date(now), 'Source': testing ? 'Integration test (synthetic)' : 'Website funnel', 'Meta lead ID': '', 'Name': lead.full_name,
     'Business name': lead.business_name, 'Email': lead.email, 'Phone': lead.phone, 'Business type': lead.business_type,
-    'City/service area': lead.service_area, 'Team size': lead.team_size, 'Main administrative challenge': lead.main_challenge,
-    'Assigned person': slProperties().getProperty('LEAD_OWNER') || '', 'Status': 'New',
+    'City/service area': lead.service_area, 'Team size': Number(lead.team_size), 'Main administrative challenge': lead.main_challenge,
+    'Assigned person': testing ? '' : slProperties().getProperty('LEAD_OWNER') || '', 'Status': 'New',
+    'Notes': testing ? 'Synthetic integration verification only. No email, follow-up or booking. Preserve this row as test evidence.' : '',
     'Website request ID': lead.request_id, 'Website lead ID': leadId, 'Website payload hash': hash,
     'Contact acknowledgment at': now, 'UTM source': a.utm_source || '', 'UTM medium': a.utm_medium || '',
     'UTM campaign': a.utm_campaign || '', 'UTM content': a.utm_content || '', 'UTM term': a.utm_term || '',
     'Source ad ID': a.ad_id || '', 'Source adset ID': a.adset_id || '', 'Source campaign ID': a.campaign_id || ''
   };
   // ID, payload hash and lead details are persisted in the same range write.
-  sheet.getRange(sheet.getLastRow() + 1, 1, 1, headers.length).setValues([headers.map(function(h) { return SmartLearnCore.cell(values[h] || ''); })]);
+  slAppend(sheet, headers.map(function(h) { var value = values[h]; return value instanceof Date || typeof value === 'number' ? value : SmartLearnCore.cell(value == null ? '' : value); }));
   SpreadsheetApp.flush();
   return { ok: true, leadId: leadId };
 }
 function slEvent(book, sheet, headers, event) {
   if (slProperties().getProperty('EVENTS_ENABLED') !== 'true') return { ok: false, code: 'events_disabled' };
-  if (!event || !['booked', 'rescheduled', 'cancelled', 'replied', 'stopped'].includes(event.type) || !/^[\w:.-]{1,180}$/.test(event.eventId || '') || !SmartLearnCore.email.test(event.email || '') || !Number.isFinite(Date.parse(event.occurredAt))) return { ok: false, code: 'validation' };
+  var checked = SmartLearnCore.validateEvent(event);
+  if (Object.keys(checked.errors).length) return { ok: false, code: 'validation' };
+  event = checked.value;
   var events = slTable(book, SL_EVENTS), eventHash = slHash(JSON.stringify(event));
   var prior = slFind(events, 1, event.eventId);
   if (prior) return String(events.getRange(prior, 2).getValue()) === eventHash ? { ok: true } : { ok: false, code: 'conflict' };
@@ -165,13 +183,54 @@ function slEvent(book, sheet, headers, event) {
       slWriteState(states, event.leadId, state);
       // Only the matched row's calendar cell is updated. Owner, status, notes,
       // attendance and outcomes remain under the team's control.
-      sheet.getRange(row, headers.indexOf('Call date/time') + 1).setValue(SmartLearnCore.cell(state.booked ? (event.dateTime || '') + (event.timeZone ? ' (' + event.timeZone + ')' : '') : ''));
     }
+    // Repair this projection even if a prior attempt saved state but failed before
+    // updating the typed tracker cell. Stale events project current state only.
+    if (state.calendarTime) sheet.getRange(row, headers.indexOf('Call date/time') + 1).setValue(state.booked ? new Date(state.confirmation.dateTime) : '');
   }
-  events.getRange(events.getLastRow() + 1, 1, 1, 3).setValues([[SmartLearnCore.cell(event.eventId), eventHash, new Date().toISOString()]]);
+  slAppend(events, [SmartLearnCore.cell(event.eventId), eventHash, new Date().toISOString()]);
   SpreadsheetApp.flush();
   return { ok: true };
 }
+function slHealth(book) {
+  var p = slProperties(), delivery = slTable(book, SL_DELIVERY), counts = {};
+  if (delivery.getLastRow() > 1) delivery.getRange(2, 2, delivery.getLastRow() - 1, 1).getValues().forEach(function(row) {
+    var state = String(row[0]); if (['sent', 'sending', 'uncertain', 'blocked_configuration'].includes(state)) counts[state] = (counts[state] || 0) + 1;
+  });
+  return { ok: true, schema: 'ready', captureEnabled: p.getProperty('CAPTURE_ENABLED') === 'true', testCaptureEnabled: p.getProperty('TEST_CAPTURE_ENABLED') === 'true', eventsEnabled: p.getProperty('EVENTS_ENABLED') === 'true', emailEnabled: p.getProperty('EMAIL_ENABLED') === 'true', followupsEnabled: p.getProperty('FOLLOWUPS_ENABLED') === 'true', delivery: counts };
+}
+function inspectSmartLearnSetup() {
+  var result;
+  try { var book = slBook(); slCheckHeaders(slLeads(book)); result = slHealth(book); }
+  catch (error) { result = { ok: false, code: 'configuration_or_schema' }; }
+  console.log(JSON.stringify(result)); // Flags and aggregate counts only; no PII or secrets.
+  return result;
+}
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('SmartLearn inquiry controls')
+    .addItem('Record reply / pause prompts', 'recordSmartLearnReply')
+    .addItem('Record stop request', 'recordSmartLearnStop')
+    .addItem('Check adapter setup', 'inspectSmartLearnSetup').addToUi();
+}
+function slRecordContact(type, email) {
+  if (!['replied', 'stopped'].includes(type) || typeof email !== 'string' || !SmartLearnCore.email.test(email.trim())) throw new Error('Invalid suppression entry');
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    var book = slBook(), contacts = slTable(book, SL_CONTACTS), address = email.trim().toLowerCase();
+    var state = slReadState(contacts, address); state[type] = true; slWriteState(contacts, address, state);
+    slAppend(slTable(book, SL_EVENTS), ['manual:' + Utilities.getUuid(), slHash(type + ':' + address), new Date().toISOString()]);
+    SpreadsheetApp.flush();
+  } finally { lock.releaseLock(); }
+}
+function slPromptContact(type) {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt(type === 'stopped' ? 'Record a stop request' : 'Record a reply / pause prompts', 'Enter the contact email from the verified reply or stop request. This updates private suppression state; no message is sent.', ui.ButtonSet.OK_CANCEL);
+  if (response.getSelectedButton() !== ui.Button.OK) return;
+  try { slRecordContact(type, response.getResponseText()); ui.alert('Contact suppression saved. Existing Status options are unchanged. No message was sent.'); }
+  catch (error) { ui.alert('Suppression was not confirmed. Check the email and adapter setup before running delivery.'); }
+}
+function recordSmartLearnReply() { slPromptContact('replied'); }
+function recordSmartLearnStop() { slPromptContact('stopped'); }
 function slMailConfig() {
   var p = slProperties();
   return { enabled: p.getProperty('EMAIL_ENABLED') === 'true', from: p.getProperty('SENDER_EMAIL') || '', replyTo: p.getProperty('REPLY_TO_EMAIL') || '',
@@ -217,15 +276,16 @@ function processSmartLearnNotifications() {
     for (var i = 0; i < rows.length && sent < 10; i++) {
       var get = function(name) { return rows[i][headers.indexOf(name)]; };
       var lead = { leadId: String(get('Website lead ID')), full_name: String(get('Name')), business_name: String(get('Business name')), email: String(get('Email')).toLowerCase() };
-      if (!SmartLearnCore.uuid.test(lead.leadId) || !get('Website request ID')) continue;
+      if (!SmartLearnCore.uuid.test(lead.leadId) || !get('Website request ID') || get('Source') !== 'Website funnel') continue;
       var state = slReadState(states, lead.leadId), contact = slReadState(contacts, lead.email);
       // Honor team-maintained stop/reply states too, including imported suppression.
       var manualStatus = String(get('Status')).toLowerCase();
       if (/stop|unsubscrib|do not contact/.test(manualStatus)) { contact.stopped = true; slWriteState(contacts, lead.email, contact); }
       if (/replied/.test(manualStatus)) { contact.replied = true; slWriteState(contacts, lead.email, contact); }
       var blocked = Object.assign({}, state, contact);
+      if (!/^(new|contacted|follow.up pending)$/i.test(manualStatus)) blocked.manualHold = true;
       var kinds = ['owner'];
-      if (!blocked.stopped && !blocked.replied && !blocked.booked && !blocked.cancelled) kinds.push('ack');
+      if (SmartLearnCore.promptsAllowed(blocked)) kinds.push('ack');
       var ackRow = slFind(delivery, 1, lead.leadId + ':ack');
       var ackSent = ackRow && delivery.getRange(ackRow, 2).getValue() === 'sent';
       var today = Utilities.formatDate(new Date(), cfg.timeZone || 'Etc/UTC', 'yyyy-MM-dd');
@@ -238,12 +298,20 @@ function processSmartLearnNotifications() {
       }
       if (cfg.confirmationSystem === 'adapter' && state.booked && state.confirmation && !blocked.stopped) kinds.push('confirmation');
       for (var k = 0; k < kinds.length && sent < 10; k++) {
-        var kind = kinds[k], suffix = kind === 'confirmation' ? ':' + state.confirmation.eventId : '';
+        var kind = kinds[k], e = state.confirmation;
+        var suffix = kind === 'confirmation' ? ':' + slHash(JSON.stringify([e.bookingId, e.dateTime, e.timeZone, e.host || '', e.meetingUrl || '', e.rescheduleUrl || ''])) : '';
         var key = lead.leadId + ':' + kind + suffix;
-        if (slFind(delivery, 1, key)) continue; // sending/uncertain/sent are all held; never auto-resend.
-        var mail = SmartLearnCore.message(kind, lead, cfg, state.confirmation);
-        var deliveryRow = delivery.getLastRow() + 1;
-        delivery.getRange(deliveryRow, 1, 1, 3).setValues([[key, 'sending', new Date().toISOString()]]);
+        var deliveryRow = slFind(delivery, 1, key);
+        if (deliveryRow && delivery.getRange(deliveryRow, 2).getValue() !== 'blocked_configuration') continue; // Never auto-resend uncertain/sent attempts.
+        var mail;
+        try { mail = SmartLearnCore.message(kind, lead, cfg, state.confirmation); }
+        catch (error) {
+          if (deliveryRow) delivery.getRange(deliveryRow, 2, 1, 2).setValues([['blocked_configuration', new Date().toISOString()]]);
+          else slAppend(delivery, [key, 'blocked_configuration', new Date().toISOString()]);
+          SpreadsheetApp.flush(); continue;
+        }
+        if (deliveryRow) delivery.getRange(deliveryRow, 2, 1, 2).setValues([['sending', new Date().toISOString()]]);
+        else deliveryRow = slAppend(delivery, [key, 'sending', new Date().toISOString()]);
         SpreadsheetApp.flush();
         try {
           var options = { name: 'SmartLearn', replyTo: cfg.replyTo };

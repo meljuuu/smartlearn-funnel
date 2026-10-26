@@ -12,6 +12,16 @@ preview. The implementation is prepared for review; there is no verified live
 capture, email sender or calendar connection. No ads or follow-up delivery were
 enabled. No generated ZIP was supplied for this update.
 
+**Current setup progress:** the existing tracker has been prepared in place with
+twelve website/attribution headers and four adapter tabs. Its original native
+table, original A:R fields, date/numeric types, Status dropdown and sharing have
+been preserved. The capture-only source was installed in the bound
+[SmartLearn funnel adapter](https://script.google.com/u/3/home/projects/1bijcWxy-GWCcZHWwnnkLDhkjuo1ZDnFZ22QLunMJoFOzWMolPS0Tj_BE/edit)
+under `sales@smartlearn.ca`; `initializeSmartLearn` completed in Google. The signing
+secret is paired in private Apps Script properties and Cloudflare. This is setup
+evidence, not proof of a deployed web-app capture. Versioned `/exec` publication
+and a real synthetic-row check remain the next external verification steps.
+
 ## Verified sources and repository
 
 - Campaign document: https://docs.google.com/document/d/1i0wi07xEDxziE5Iq3dgK-bEvSRLfGVSNSc630EvR9e4/edit
@@ -26,14 +36,18 @@ enabled. No generated ZIP was supplied for this update.
   logo and booking contact. It does not supply calendar settings, approved sender,
   privacy URL, launch approval or approved follow-up timing.
 - Tracker metadata: tab **Leads & Discovery Calls**, sheet ID `606135387`, 1000
-  rows, 26 columns, frozen first row; workbook time zone `America/Vancouver`.
+  rows, now 30 columns, frozen first row; workbook time zone `America/Vancouver`.
   That workbook setting is not confirmation of the call's time zone. The bounded
   `A1:Z4` read returned the header row and no lead records or cell validations in
   that inspected range. It does not establish that the entire workbook is empty.
 - Permission metadata returned only owner `sales@smartlearn.ca`. Zakir's and
-  Ernell's access was not verified. No sharing was changed. A search for accessible
-  Apps Script projects in this account returned none; that cannot rule out scripts
-  in other accounts or inaccessible integrations.
+  Ernell's access was not verified. No sharing was changed. Drive search did not
+  expose a script project, but Chrome opened a blank bound Apps Script project;
+  that project is now installed and initialized as described above.
+- Native table `SmartLearnLeads` (`1325764616`) now covers A1:AD1000. Original
+  `Team size` is `DOUBLE`, `Date received` is `DATE`, `Call date/time` is
+  `DATE_TIME`; Status permits New, Contacted, Qualified, Booked, Attended,
+  Proposal Sent, Won, Lost and Not a Fit. No new Status choices were added.
 
 ## What is implemented
 
@@ -41,6 +55,9 @@ The original two-step form, eight home-service categories plus Other, optional
 phone, inquiry acknowledgment, FAQs, logo and people-free process cards remain.
 Solo teams and Other service areas are accepted for review. No qualification
 rejection rule, unsupported savings claim, tracking script or paid CRM was added.
+Team size now collects an exact whole-person count to match the existing numeric
+tracker column. The earlier range labels could not fit that type reliably; no
+minimum-company-size qualification rule was introduced.
 
 `assets/app.js` has explicit preview/live/unavailable states, step focus, Enter and
 back behavior, named-field errors, duplicate-click protection, frozen retry
@@ -106,11 +123,13 @@ Vercel or permission to send as `info@smartlearn.ca`.
    inspect/reconcile it before adding this adapter; do not replace an unknown
    workflow. If it is a blank project, name it `SmartLearn funnel adapter`.
 3. Run `npm ci` then `npm run build` locally. Paste the generated
-   `.review/SmartLearn.gs` into an Apps Script `.gs` file, replacing only a blank
+   `.review/SmartLearn-Capture.gs` into an Apps Script `.gs` file, replacing only a blank
    starter file. This combined installation file contains both shared validation
-   and the adapter. Keep a single copy of its functions in the project.
+   and the capture/event adapter without Gmail capability. It is already installed
+   in the bound project above. Keep a single copy of its functions in the project.
+   Install the optional full `.review/SmartLearn.gs` only after sender approval.
 4. In **Project Settings**, use the V8 runtime. The repository's
-   `apps-script/appsscript.example.json` shows the manifest settings, including
+   `apps-script/appsscript.capture.json` shows the Sheets-only manifest settings, including
    `exceptionLogging: "NONE"`; enable **Show appsscript.json manifest file** to
    inspect/update those keys while preserving unrelated settings in an existing
    project. The code does not log request bodies, PII or keys.
@@ -120,8 +139,9 @@ Vercel or permission to send as `info@smartlearn.ca`.
    | --- | --- |
    | `SPREADSHEET_ID` | `1quWPUluIktsa4zmWS6vS_877v_AgSl6nXmENep6AuVU` |
    | `LEADS_SHEET_NAME` | `Leads & Discovery Calls` |
-   | `APPS_SCRIPT_SECRET` | A newly generated random secret of at least 32 characters; store the same value only in Vercel's server secret setting |
+   | `APPS_SCRIPT_SECRET` | Already generated and paired privately in this bound project and Cloudflare; do not rotate it during setup |
    | `CAPTURE_ENABLED` | `false` initially |
+   | `TEST_CAPTURE_ENABLED` | `false`; allow only the explicitly labeled synthetic verification when temporarily true |
    | `EVENTS_ENABLED` | `false` initially |
    | `EMAIL_ENABLED` | `false` |
    | `FOLLOWUPS_ENABLED` | `false` |
@@ -130,10 +150,12 @@ Vercel or permission to send as `info@smartlearn.ca`.
    Generate/store secrets with your password manager or local secure tooling.
    Never paste them into chat, public JS, URL parameters, screenshots or Git.
 6. Select `initializeSmartLearn` in the function picker and click **Run**. Review
-   the Google authorization screen as the account owner. Apps Script infers access
-   from the installed code, including Sheets and Gmail operations; a connection in
-   ChatGPT does not authorize those scopes. Do not authorize a sender/delegation
-   that has not been agreed. No initialization function sends mail or adds triggers.
+   the Google authorization screen as the account owner if one appears. The installed
+   capture-only bundle needs Sheets capability and contains no Gmail calls; the
+   optional mail bundle requires separate sender approval and Gmail authorization.
+   Initialization has already completed in Google without a new OAuth prompt.
+   A ChatGPT connection alone does not establish those runtime permissions. No
+   initialization function sends mail or adds delivery triggers.
 7. Verify existing A:R columns and records are unchanged. Initialization appends
    the twelve technical headers below and creates four private workbook tabs:
    `_SmartLearnState`, `_SmartLearnContacts`, `_SmartLearnEvents`,
@@ -143,11 +165,11 @@ Vercel or permission to send as `info@smartlearn.ca`.
    approved account. The Vercel server needs unauthenticated network access to the
    endpoint, so **Who has access: Anyone** is required for this signed design.
    This exposes a signed API, not the tracker: unsigned calls return an auth error.
-   This is an owner-run security configuration decision. If organization policy
+   This is an owner-approved security configuration decision. If organization policy
    disallows it, leave capture disabled and use an approved authenticated runtime
    instead; do not weaken organization policy or publish the spreadsheet.
 9. Copy the deployment's `https://script.google.com/macros/s/.../exec` URL into
-   Vercel `APPS_SCRIPT_URL`. Do not use the editor or `/dev` URL. After script edits,
+   Cloudflare `APPS_SCRIPT_URL` for the current review deployment. Do not use the editor or `/dev` URL. After script edits,
    choose **Deploy → Manage deployments → Edit → Version: New version → Deploy**.
    Saving source alone does not update the existing web-app deployment.
 
@@ -155,17 +177,17 @@ Vercel or permission to send as `info@smartlearn.ca`.
 
 | Existing tracker header | Written value |
 | --- | --- |
-| Date received | Server UTC timestamp, not browser time |
+| Date received | Server timestamp as a real Sheet Date, respecting the existing DATE type |
 | Source | `Website funnel` |
 | Meta lead ID | Empty for website inquiries |
 | Name / Business name | `full_name` / `business_name` |
 | Email / Phone | Validated email / optional phone |
 | Business type / City/service area | `business_type` / `service_area` |
-| Team size / Main administrative challenge | `team_size` / `main_challenge` |
+| Team size / Main administrative challenge | Validated exact numeric headcount / `main_challenge` |
 | Assigned person | Approved `LEAD_OWNER` script property, or blank while pending |
 | Status | `New` for a newly captured website inquiry |
 | Next follow-up date, Attendance, Outcome, Notes | No existing values rewritten |
-| Call date/time | Only the matching lead's cell updated on verified calendar events |
+| Call date/time | Real Sheet Date from an offset-qualified provider instant; only the matched lead is updated |
 
 Appended headers: `Website request ID`, `Website lead ID`, `Website payload hash`,
 `Contact acknowledgment at`, `UTM source`, `UTM medium`, `UTM campaign`, `UTM content`,
@@ -176,6 +198,25 @@ leading whitespace before `=`, `+`, `-` or `@`. Website and Meta IDs are separat
 Attribution is limited to the five named UTM fields and `ad_id`, `adset_id`,
 `campaign_id` (200 characters each). No personal data is intentionally put in URLs.
 Use non-personal campaign values in ad destination links.
+
+### Signed readiness and synthetic verification
+
+`npm run verify:google` checks a versioned `/exec` deployment's signing/schema and
+prints only flags and aggregate delivery states. Key input is hidden. No append
+is attempted unless `--capture` is explicitly supplied. See CLOUDFLARE.md for the
+complete three-concurrent-attempt synthetic check while public capture remains off.
+The Google-only `TEST_CAPTURE_ENABLED` gate is independent of `CAPTURE_ENABLED`.
+Test rows use a fixed `.invalid` email, explicit test Source and Notes, are excluded
+from all recipient delivery, and remain as evidence. The test gate is reset after
+the check. If response delivery is uncertain, reconcile the printed opaque request
+ID with `npm run verify:google -- --status <request-uuid>` before another append.
+
+`inspectSmartLearnSetup` can also be run by the authorized script owner. Its
+execution log contains only readiness flags and delivery counts. Delivery rows in
+`blocked_configuration` have not been sent and can recover after valid template
+details exist; `sending`/`uncertain` attempts remain held for manual reconciliation.
+Calendar confirmations use booking details rather than transport-event IDs as
+their delivery key, so equivalent provider notifications cannot send twice.
 
 ## 2. Configure and test Vercel (project maintainer action)
 
@@ -262,9 +303,14 @@ is a booking contact only. None of those delivery settings were verified here.
 5. Arrange reply/stop detection before automated delivery: an authorized existing
    workflow must watch the actual Reply-To mailbox and forward verified reply and
    stop events to the authenticated adapter below. Until that exists, staff must
-   set tracker Status to `Replied` or `Stopped` immediately and manually run the
-   worker only after reviewing the inbox. Setting either on a Meta/manual import
-   also suppresses the same email on website records before sending.
+   review the inbox before each manual delivery run. In the existing Sheet, reload
+   and use **SmartLearn inquiry controls → Record reply / pause prompts** or
+   **Record stop request**, then enter the contact email from the verified message.
+   Those actions update private `_SmartLearnContacts` state under the same lock;
+   they send no message and preserve the existing Status dropdown. Do not force
+   `Replied` or `Stopped` into that dropdown: those values are not currently allowed.
+   Existing imported stop/reply labels are also recognized conservatively. A manual
+   Booked/Qualified/etc. status holds prompts without inventing a calendar event.
 6. Once delivery and suppression checks pass and delivery is approved, an account
    owner can use **Apps Script → Triggers → Add Trigger →
    processSmartLearnNotifications → Time-driven** for the agreed processing
@@ -324,7 +370,7 @@ the private contact state plus tracker status; a stop request must remain stoppe
      "email": "authorized-test-mailbox@example.invalid",
      "occurredAt": "2026-10-26T12:00:00Z",
      "bookingId": "provider-event-id",
-     "dateTime": "actual scheduled date/time",
+     "dateTime": "2026-10-30T10:00:00-07:00",
      "timeZone": "actual IANA time zone",
      "host": "actual host",
      "meetingUrl": "https://provider.example/actual-meeting",
@@ -334,7 +380,9 @@ the private contact state plus tracker status; a stop request must remain stoppe
 
    These are schema examples, not real appointments. Allowed types are `booked`,
    `rescheduled`, `cancelled`, `replied`, `stopped`. Calendar types require lead ID
-   and booking ID; booking/reschedule also require date/time and zone. Adapter
+   and booking ID; booking/reschedule also require an ISO 8601 scheduled instant
+   with `Z` or a numeric UTC offset, plus the actual IANA time-zone name. The date
+   above is an illustrative format, not an appointment. Adapter
    confirmations require all host/join/reschedule details. Reply/stop events need
    email, event ID and occurrence time, so suppression can be recorded even before
    a matching website inquiry arrives. Preserve stable provider event IDs on

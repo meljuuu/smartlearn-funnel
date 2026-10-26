@@ -9,9 +9,10 @@ function createHandler(env = process.env, fetcher = fetch) {
     if (!gateway.originAllowed(req, env)) return gateway.json(res, 403, { ok: false, code: 'origin' });
     let data;
     try { data = await gateway.body(req); } catch { return gateway.json(res, 400, { ok: false, code: 'invalid_body' }); }
+    if (data?.action !== undefined && !['capture', 'status'].includes(data.action)) return gateway.json(res, 400, { ok: false, code: 'validation' });
     const action = data?.action === 'status' ? 'status' : 'capture';
-    if (action === 'capture' && !gateway.configured(env)) return gateway.json(res, 503, { ok: false, code: 'capture_disabled' });
-    if (action === 'status' && !core.uuid.test(data.request_id || '')) return gateway.json(res, 400, { ok: false, code: 'validation' });
+    if (action === 'capture' && (env.FUNNEL_MODE !== 'live' || !gateway.configured(env))) return gateway.json(res, 503, { ok: false, code: 'capture_disabled' });
+    if (action === 'status' && (typeof data.request_id !== 'string' || !core.uuid.test(data.request_id))) return gateway.json(res, 400, { ok: false, code: 'validation' });
     const checked = action === 'capture' ? core.validateLead(data) : { value: { request_id: data.request_id.toLowerCase() }, errors: {} };
     if (Object.keys(checked.errors).length) return gateway.json(res, 422, { ok: false, code: 'validation', errors: checked.errors });
     // Vercel supplies x-real-ip. Never store raw IPs or trust a client payload's IP.

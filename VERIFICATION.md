@@ -1,85 +1,121 @@
-# Verification record — October 26, 2026
+# SmartLearn verification — October 26, 2026
 
-## Findings and changes
+## Repository and deployment grounding
 
-The original repository had HTML/CSS/JS only, no dependencies, backend or Vercel
-configuration. The deployed HTML/app matched `c573ffe`. Its public settings were
-preview mode with empty capture/calendar/privacy settings. The old code silently
-fell back to preview if live configuration was incomplete, trusted a `mode` query
-to show a submitted state and had no server implementation for its endpoint contract.
+PR #1 was checked through GitHub and is open, draft and unmerged, with head
+`feat/durable-lead-capture`. Work continued on that branch. The initial working
+tree was clean and no applicable AGENTS.md was found in the workspace/ancestors.
+The pre-update Cloudflare version was
+`cee82b46-01cd-4f25-b77f-95b29a797284` (the earlier review code plus the signing
+secret). Vercel, DNS, campaign destinations and ads were not changed.
 
-- `assets/app.js`, `index.html`, `thank-you.html`: deliberate modes, focus/keyboard
-  behavior, error recovery, duplicate protection, opaque pending-ID recovery and
-  authoritative receipt lookup. Query parameters no longer assert capture.
-- `assets/accessibility.css`: field text/readability, focus visibility and narrow
-  layouts. Existing design sheets and logo are preserved. Git blob hash of
-  `assets/logo.png` matches original `348148040d4180919e14ff126c58002dc57f259d`.
-- `api/leads.js`, `server/gateway.cjs`, `shared/core.cjs`: server validation,
-  same-origin API, signed backend requests and capture/status contract.
-- `apps-script/SmartLearn.gs`: existing-header mapping, serialized deduplication,
-  formula escaping, bounded spam counters, durable delivery keys and disabled
-  mail/follow-up handling. `api/events.js`: disabled authenticated event adapter.
-- `vercel.json`, `scripts/`, `package*.json`: explicit root/static build and Node
-  functions; private material is not copied to `public/`.
-- `SETUP.md`, `.env.example`, README: current source evidence and exact manual
-  account/deployment/verification steps, replacing stale `dist/` instructions.
+The initial deployed Cloudflare config was fetched: preview true, no calendar or
+privacy URL; capture/events POSTs returned application JSON 503 with
+`capture_disabled` / `events_disabled`. Wrangler initially reported no secrets.
 
-## Local checks passed
+## Concrete changes
 
-`npm test`: 15 Node/service-harness tests, using synthetic addresses and an
-in-memory Sheets/Gmail service. They cover allowed categories and solo/out-of-area
-inquiries; invalid fields/lengths/email/acknowledgment; HMAC tampering/expiry;
-disabled config; origin/body rejection; malformed upstream/timeouts; same-ID replay
-and changed-payload conflict; lock/busy behavior; lost response after durable write;
-field mapping/formula escaping; record preservation; rate limits; notification
-failure and sender rejection; imported stops; repeat/stale calendar events,
-rescheduling/cancellation; one confirmation system; reply and stop suppression;
-disabled/configurable business-day prompts and prevention of catch-up messages.
+- The actual tracker is a native typed table. Team-size range labels were
+  incompatible with its DOUBLE column; the form now collects exact headcount,
+  including solo teams, and the adapter writes a number. Received/calendar dates
+  are real Sheet Dates, respecting DATE / DATE_TIME types and provider UTC offsets.
+- A partial calendar write previously persisted state but could fail before the
+  tracker cell, then skip repair on replay. Replays now project the current state
+  into the typed cell before the event is marked applied. Stale events cannot
+  restore old booking details.
+- Confirmation delivery keys now identify booking details rather than transport
+  event IDs, preventing equivalent provider notifications from sending twice.
+  Incomplete templates create observable `blocked_configuration` records and do
+  not stop unrelated notifications. Uncertain send attempts still require manual
+  reconciliation, preserving at-most-once automatic delivery behavior.
+- Status dropdown choices do not include Replied/Stopped. Dedicated private
+  `recordSmartLearnReply` / `recordSmartLearnStop` controls record sticky contact
+  suppression without changing the dropdown. Manual handled/booked statuses hold
+  recipient messages without asserting a verified appointment.
+- Server-rejected fields can be corrected under the same request ID. Pending
+  requests are reconciled after reload; browser back/forward-cache restoration
+  clears a completed request's lock for a genuinely new inquiry. Capture-event
+  metadata prevents duplicate browser events for the same completed request.
+- Preview mode also blocks direct public capture API calls. Malformed status IDs
+  and event shapes fail validation. Duplicate technical keys fail closed rather
+  than selecting an arbitrary record. Append operations can grow the Sheet grid.
+- Capture-only Google installation excludes Gmail capability. Signed readiness
+  and explicitly gated synthetic-test actions enable testing without public form
+  activation or prospect email. The interactive verifier uses hidden key input,
+  concurrent same-ID attempts, status reconciliation and test-gate cleanup.
+- The deployment wrapper requires committed, clean code and sets BUILD_COMMIT;
+  Cloudflare exposes that opaque revision in X-SmartLearn-Build on public config.
 
-`npm run test:browser`: 11 tests in isolated headless Google Chrome. They cover
-empty/whitespace fields, malformed email, absent acknowledgment, step/back focus,
-Tab order, Enter behavior, valid captured response, duplicate clicks, allowlisted
-UTM/ad fields, no contact details in URL/browser storage, frozen same-ID retry after
-status lookup, malformed response/server failure/simulated network timeout, direct
-query-spoofed handoff, unverified receipt, no-send preview, incomplete live config
-and page overflow at 320/390/1440 pixels. Captured responses are mocks; no external
-prospects or integrations are contacted. The timeout check simulates a network
-timeout rather than waiting through the actual 25-second browser timer.
+The original logo/design, eight categories, local offer, optional phone and inquiry
+acknowledgment are retained. The unsubstantiated percentage claim is absent from
+public copy. No Pixel, new Meta capture route, paid CRM or recipient delivery was
+introduced.
 
-`npm run build` passes in preview. Desktop landing and 320px contact screenshots
-were visually inspected. Screenshots of the landing page, contact step and handoff
-at all three widths are saved locally under ignored `.review/`. Screenshots contain
-no real prospect details. No build or runtime secret is embedded in public config.
+## Real Google setup completed
 
-## Not established by local checks
+The campaign document and related follow-up/campaign plans were reread through
+`sales@smartlearn.ca`. They contain no confirmed calendar URL, sender, privacy URL
+or launch approval. The current combined campaign document includes all eight
+categories; its older campaign-plan sibling still omits roofing/renovation.
+Documents were not edited. The main campaign document still names the Vercel
+destination; add a clearly labeled Cloudflare review link separately from any
+future approved paid destination.
 
-No live Apps Script deployment/authorization, Google write, inbox delivery, reply
-monitor, calendar webhook, appointment, Meta trigger/tracking, campaign permission,
-billing or ad delivery was verified. The mock service demonstrates code behavior,
-not actual Google durability/quotas or delivery. No live test mailbox was supplied.
-The existing tracker was read only; no prospect/test rows, headers or sharing were
-changed through the connector. Account approvals remain manual in SETUP.md.
+The existing tracker was read through metadata, bounded CellData and a native-table
+metadata probe. Its original 18 column definitions and Status choices were kept.
+Twelve technical headers were appended; the same native table was extended to
+A1:AD1000, preserving original types. Four private adapter tabs were added in the
+same workbook. Header/data/format readback passed; original A:R values were not
+rewritten, and sharing was not widened. No lead row was appended by connector work.
 
-Google's deployment and sender requirements were checked against
-[Apps Script web apps](https://developers.google.com/apps-script/guides/web) and
-[GmailApp](https://developers.google.com/apps-script/reference/gmail/gmail-app).
-Runtime layout follows [Vercel's Node functions documentation](https://vercel.com/docs/functions/runtimes/node-js).
+Chrome was verified as `sales@smartlearn.ca`. The blank bound project was named
+SmartLearn funnel adapter, capture-only source was installed and initialization
+completed in Google. The Google editor parsed the manual suppression/diagnostic
+functions. No new OAuth prompt was approved by the agent.
 
-## Deployment result
+A random 32-byte signing value was generated and uploaded through Wrangler's
+server-secret interface. An encrypted Windows-user DPAPI recovery copy is retained
+only under ignored `.review/`. A one-time local memory channel paired the same
+value into Apps Script properties; readback compared it without printing it.
+No plaintext key file was written and the checked Wrangler logs contained zero
+occurrences of the real value. Source, public config and commits contain no key.
 
-Changes were pushed to `feat/durable-lead-capture` in the existing repository;
-[draft PR #1](https://github.com/meljuuu/smartlearn-funnel/pull/1) is open against
-`main`. Vercel's GitHub status reported the deployment ready and its bot supplied
-[this preview URL](https://smartlearn-funnel-git-feat-durabl-da543c-poladasma123s-projects.vercel.app).
-The production branch was not merged or redeployed by this change.
+Web-app publication is a separate approval boundary; until its `/exec` deployment
+and signed synthetic-row test are verified, this is preparation/runtime setup,
+not a functioning live Google HTTP integration.
 
-The preview is protected by Vercel Authentication. Anonymous POSTs to `/api/leads`
-and `/api/events` returned protection-layer HTTP 401 responses, while GETs followed
-to Vercel's authentication UI. These are not application-level API tests and do not
-verify the preview's deployed environment values or private-file 404s. Open the
-preview using an authorized Vercel account, or use the existing Vercel CLI session's
-authenticated `vercel curl` if available; do not disable deployment protection for
-testing. No local authenticated Vercel CLI was available. Computer Use ended because
-it could not reliably determine the current Windows browser URL; no further UI
-actions or changes to protection/settings were performed. Hosted browser and API
-smoke checks therefore remain manual, distinct from the passing local checks.
+## Local/mocked checks
+
+- `npm test`: 28 passing Node/service-harness tests. Includes signed auth, server
+  validation, invalid origins/body, malformed upstream/timeout, durable mock capture,
+  lock/busy behavior, same-ID replay/conflict, formula protection, native data types,
+  partial event recovery, sender rejection, notification failures, manual/imported
+  suppression, cancellation/reschedule/stale events, semantic confirmation keys,
+  disabled prompts, synthetic-test safety and new handler/adapter instances using
+  the same durable mock Sheet. These are not Google concurrency/quotas evidence.
+- `npm run test:browser`: 15 passing isolated Chrome tests, covering both steps,
+  required/whitespace/email/acknowledgment validation, exact headcount, keyboard and
+  back navigation, repeated clicks, corrected 422 responses, failed/time-out
+  capture, frozen retry payloads, pending reloads, neutral direct handoff visits,
+  preview no-send behavior, PII-free URLs/storage and 320/390/1440px overflow.
+- `npm run build` and Wrangler dry-run bundling pass. Node syntax checks pass.
+  `git diff --check` passes. Dependency audit reports zero vulnerabilities.
+
+## External checks still requiring evidence
+
+Until explicitly recorded otherwise, a real Apps Script HTTP capture/replay row,
+inbox delivery, inbound reply monitor, calendar/provider webhook, booked appointment,
+Meta route/tracking/consent and paid campaign permissions/billing remain unverified.
+No authorized test mailbox or confirmed calendar was supplied. A connected account,
+saved secret, successful initialization or mocked test does not prove those links.
+
+Review deployment changes are documented in CLOUDFLARE.md with the immediate
+pre-fix version for rollback. The signed real-adapter test is a separate command;
+its opaque request ID must be checked against exactly one actual tracker row before
+claiming durable capture works live.
+
+Runtime behavior was checked against official
+[Apps Script web-app guidance](https://developers.google.com/apps-script/guides/web),
+[Google table types](https://developers.google.com/workspace/sheets/api/guides/tables),
+[LockService](https://developers.google.com/apps-script/reference/lock) and
+[Cloudflare version rollback guidance](https://developers.cloudflare.com/workers/versions-and-deployments/rollbacks/).

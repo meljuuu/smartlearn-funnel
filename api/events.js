@@ -8,16 +8,9 @@ function createHandler(env = process.env, fetcher = fetch) {
     if (!gateway.secureEqual(req.headers.authorization, `Bearer ${env.EVENT_INGEST_SECRET}`)) return gateway.json(res, 401, { ok: false });
     let event;
     try { event = await gateway.body(req); } catch { return gateway.json(res, 400, { ok: false }); }
-    const types = ['booked', 'rescheduled', 'cancelled', 'replied', 'stopped'];
-    if (!event || !types.includes(event.type) || typeof event.eventId !== 'string' || !/^[\w:.-]{1,180}$/.test(event.eventId) ||
-      (event.leadId && !core.uuid.test(event.leadId)) || !core.email.test(event.email || '') ||
-      !Number.isFinite(Date.parse(event.occurredAt)) || Date.parse(event.occurredAt) > Date.now() + 300000) return gateway.json(res, 422, { ok: false });
-    for (const key of ['host', 'dateTime', 'timeZone', 'meetingUrl', 'rescheduleUrl', 'bookingId']) {
-      if (event[key] !== undefined && (typeof event[key] !== 'string' || event[key].length > 500 || /[\x00-\x1f]/.test(event[key]))) return gateway.json(res, 422, { ok: false });
-    }
-    if (['booked', 'rescheduled', 'cancelled'].includes(event.type) && (!core.uuid.test(event.leadId || '') || !event.bookingId)) return gateway.json(res, 422, { ok: false });
-    if (['booked', 'rescheduled'].includes(event.type) && (!event.dateTime || !event.timeZone)) return gateway.json(res, 422, { ok: false });
-    event = Object.fromEntries(['type', 'eventId', 'email', 'leadId', 'occurredAt', 'host', 'dateTime', 'timeZone', 'meetingUrl', 'rescheduleUrl', 'bookingId'].filter(key => event[key] !== undefined).map(key => [key, event[key]]));
+    const checked = core.validateEvent(event);
+    if (Object.keys(checked.errors).length) return gateway.json(res, 422, { ok: false, code: 'validation' });
+    event = checked.value;
     // This is an adapter boundary, not a public calendar webhook: the authorized
     // workflow must verify provider signatures and look up the actual event first.
     try {

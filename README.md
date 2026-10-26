@@ -23,12 +23,18 @@ Open http://127.0.0.1:4173. Run `npm test` and `npm run test:browser` (installed
 Google Chrome required). Tests use synthetic addresses under `example.invalid`;
 they never contact Google Sheets, Gmail, calendars or prospects.
 
+`npm run verify:google` is a separate, explicitly live signed adapter check.
+`npm run verify:google -- --capture` can create one clearly labeled synthetic row
+only when `TEST_CAPTURE_ENABLED=true` in Apps Script. It keeps public capture and
+all delivery off, reconciles concurrent attempts and disables the test gate afterward.
+
 - [Setup and launch handoff](SETUP.md): exact account settings, verified tracker
   mapping, outstanding decisions, delivery reconciliation and external tests.
 - [Implementation verification](VERIFICATION.md): what was checked and its limits.
 - `.env.example`: server settings; never commit a filled environment file.
-- `apps-script/SmartLearn.gs` and `shared/core.cjs`: owner-installed Sheets/mail
-  adapter. `npm run build` combines them into `.review/SmartLearn.gs` for installation.
+- `apps-script/SmartLearn.gs` and `shared/core.cjs`: adapter sources. Build creates
+  `.review/SmartLearn-Capture.gs` for Sheets-only setup and optional
+  `.review/SmartLearn.gs` with mail capability after sender approval.
 
 The Vercel `main` branch remains unchanged. Both the Cloudflare review deployment
 and Vercel branch preview can be used for review. Changing code alone

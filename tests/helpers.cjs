@@ -9,10 +9,12 @@ function scriptHarness() {
   let locked = false;
   const writes = [], sent = [];
   class Sheet {
-    constructor(name, rows = []) { this.name = name; this.rows = rows; this.maxColumns = 26; }
+    constructor(name, rows = []) { this.name = name; this.rows = rows; this.maxColumns = 26; this.maxRows = 1000; }
     getLastColumn() { return Math.max(0, ...this.rows.map(r => r.length)); }
     getLastRow() { return this.rows.length; }
     getMaxColumns() { return this.maxColumns; }
+    getMaxRows() { return this.maxRows; }
+    insertRowsAfter(at, count) { this.maxRows += count; }
     insertColumnsAfter(at, count) { this.maxColumns += count; }
     setFrozenRows() {}
     getRange(row, col, nr = 1, nc = 1) {
@@ -54,13 +56,14 @@ function scriptHarness() {
     },
     ContentService: { MimeType: { JSON: 'json' }, createTextOutput: text => ({ text, setMimeType() { return this; } }) }
   });
-  vm.runInContext(fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + fs.readFileSync('apps-script/SmartLearn.gs', 'utf8'), context);
+  const source = fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + fs.readFileSync('apps-script/SmartLearn.gs', 'utf8');
+  vm.runInContext(source, context);
   context.initializeSmartLearn();
   function post(data, mutate = value => value) {
     const timestamp = Date.now(), raw = JSON.stringify(data);
     const signature = createHmac('sha256', props.APPS_SCRIPT_SECRET).update(`${timestamp}.${raw}`).digest('hex');
     return JSON.parse(context.doPost({ postData: { contents: JSON.stringify(mutate({ timestamp, data: raw, signature })) } }).text);
   }
-  return { context, post, props, sheets, sent, writes, lock };
+  return { context, post, props, sheets, sent, writes, lock, restart: () => vm.runInContext(source, context) };
 }
 module.exports = { lead, scriptHarness, headers };

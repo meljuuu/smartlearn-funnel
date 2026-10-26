@@ -16,7 +16,8 @@
   "vars": {
     "FUNNEL_MODE": "preview",
     "CAPTURE_ENABLED": "false",
-    "EVENTS_ENABLED": "false"
+    "EVENTS_ENABLED": "false",
+    "ALLOWED_ORIGINS": "https://smartlearn-funnel.polarisjumel.workers.dev"
   },
   "observability": { "enabled": false }
 }
