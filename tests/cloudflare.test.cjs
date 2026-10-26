@@ -1,0 +1,52 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { lead, scriptHarness } = require('./helpers.cjs');
+const leadModule = require('../api/leads.js');
+const origin = 'https://example.invalid';
+const env = { FUNNEL_MODE: 'preview', CAPTURE_ENABLED: 'false', EVENTS_ENABLED: 'false' };
+test('Cloudflare serves only public config, preserves neutral modes and applies security headers', async () => {
+  const { default: worker } = await import('../cloudflare/worker.mjs');
+  const preview = await worker.fetch(new Request(origin + '/assets/config.js'), { ...env, APPS_SCRIPT_SECRET: 'never-public' });
+  const body = await preview.text();
+  assert.ok(body.includes('"previewMode":true'));
+  assert.ok(!body.includes('never-public'));
+  assert.equal(preview.headers.get('Cache-Control'), 'no-store');
+  assert.ok(preview.headers.get('Content-Security-Policy').includes("frame-ancestors 'none'"));
+  const invalid = await worker.fetch(new Request(origin + '/assets/config.js'), { ...env, FUNNEL_MODE: 'live' });
+  const config = await invalid.text();
+  assert.ok(config.includes('"previewMode":false')); assert.ok(config.includes('"leadEndpoint":""'));
+});
+test('Cloudflare adapts real Request/Response to capture contract with platform IP and duplicate reconciliation', async () => {
+  const { handleApi } = await import('../cloudflare/worker.mjs');
+  const script = scriptHarness(), data = lead();
+  const settings = { CAPTURE_ENABLED: 'true', PRIVACY_POLICY_URL: origin + '/privacy', ALLOWED_ORIGINS: origin, APPS_SCRIPT_URL: 'https://script.google.com/macros/s/test/exec', APPS_SCRIPT_SECRET: script.props.APPS_SCRIPT_SECRET };
+  const requests = [];
+  const fetcher = async (url, options) => {
+    requests.push(JSON.parse(JSON.parse(options.body).data));
+    return { ok: true, json: async () => JSON.parse(script.context.doPost({ postData: { contents: options.body } }).text) };
+  };
+  const request = value => new Request(origin + '/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin, 'CF-Connecting-IP': '192.0.2.1', 'X-Real-IP': 'spoofed' }, body: JSON.stringify(value) });
+  const first = await handleApi(request(data), settings, leadModule, fetcher);
+  assert.equal(first.status, 200); const captured = await first.json();
+  const replay = await handleApi(request(data), settings, leadModule, fetcher);
+  assert.equal((await replay.json()).leadId, captured.leadId);
+  const status = await handleApi(request({ action: 'status', request_id: data.request_id }), settings, leadModule, fetcher);
+  assert.equal((await status.json()).state, 'captured');
+  assert.equal(script.sheets.get('Leads & Discovery Calls').getLastRow(), 2);
+  assert.equal(JSON.stringify(requests).includes('192.0.2.1'), false);
+  const { createHmac } = require('node:crypto');
+  assert.equal(requests[0].clientKey, createHmac('sha256', settings.APPS_SCRIPT_SECRET).update('192.0.2.1').digest('hex'));
+  const large = await handleApi(new Request(origin + '/api/leads', { method: 'POST', body: 'x'.repeat(17000) }), settings, leadModule, fetcher);
+  assert.equal(large.status, 400);
+});
+test('Cloudflare root keeps HTML routing; disabled APIs fail safely without upstream contact', async () => {
+  const { default: worker } = await import('../cloudflare/worker.mjs');
+  let requested;
+  const settings = { ...env, ASSETS: { fetch: async request => { requested = new URL(request.url).pathname; return new Response('page'); } } };
+  assert.equal(await (await worker.fetch(new Request(origin), settings)).text(), 'page');
+  assert.equal(requested, '/index.html');
+  const result = await worker.fetch(new Request(origin + '/api/leads', { method: 'POST', body: '{}' }), settings);
+  assert.equal(result.status, 503); assert.equal((await result.json()).code, 'capture_disabled');
+  const events = await worker.fetch(new Request(origin + '/api/events', { method: 'POST', body: '{}' }), settings);
+  assert.equal(events.status, 503); assert.equal((await events.json()).code, 'events_disabled');
+});

@@ -1,5 +1,12 @@
 # SmartLearn setup and launch handoff
 
+Cloudflare hosting is now also available at
+https://smartlearn-funnel.polarisjumel.workers.dev in deliberate preview mode.
+For that deployment, follow [CLOUDFLARE.md](CLOUDFLARE.md) instead of the Vercel
+hosting section below. The tracker, sender, calendar, privacy and client approval
+dependencies in this guide still apply. The existing Vercel production site was
+not replaced and no DNS/custom-domain changes were made.
+
 Status as checked on October 26, 2026: the existing production site is a deliberate
 preview. The implementation is prepared for review; there is no verified live
 capture, email sender or calendar connection. No ads or follow-up delivery were

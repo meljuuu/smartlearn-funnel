@@ -3,6 +3,12 @@
 Review build for Surrey and Langley home-service businesses. Real capture, email,
 follow-ups and calendar integration are **disabled by default**.
 
+Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
+
+Deploy updates to the authenticated Cloudflare account with
+`npm run deploy:cloudflare`. The Worker serves the existing pages and reuses the
+same server handlers; [Cloudflare setup](CLOUDFLARE.md) covers runtime settings.
+
 The existing root HTML/assets are retained. Vercel now builds an explicit static
 `public/` output and two Node server functions in `api/`; it does not use `dist/`
 or the unrelated private preview's `.openai/hosting.json`.
@@ -24,6 +30,6 @@ they never contact Google Sheets, Gmail, calendars or prospects.
 - `apps-script/SmartLearn.gs` and `shared/core.cjs`: owner-installed Sheets/mail
   adapter. `npm run build` combines them into `.review/SmartLearn.gs` for installation.
 
-The Vercel `main` branch remains the production source. Use the review branch's
-preview deployment for integration testing before merging. Changing code alone
+The Vercel `main` branch remains unchanged. Both the Cloudflare review deployment
+and Vercel branch preview can be used for review. Changing code alone
 does not authorize advertising, media spend or automated delivery.

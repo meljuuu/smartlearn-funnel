@@ -1,6 +1,9 @@
 node_modules/
 public/
 .vercel/
+.wrangler/
+.dev.vars
+.dev.vars.*
 .review/
 .env
 .env.*
