@@ -64,3 +64,22 @@ Google's deployment and sender requirements were checked against
 [Apps Script web apps](https://developers.google.com/apps-script/guides/web) and
 [GmailApp](https://developers.google.com/apps-script/reference/gmail/gmail-app).
 Runtime layout follows [Vercel's Node functions documentation](https://vercel.com/docs/functions/runtimes/node-js).
+
+## Deployment result
+
+Changes were pushed to `feat/durable-lead-capture` in the existing repository;
+[draft PR #1](https://github.com/meljuuu/smartlearn-funnel/pull/1) is open against
+`main`. Vercel's GitHub status reported the deployment ready and its bot supplied
+[this preview URL](https://smartlearn-funnel-git-feat-durabl-da543c-poladasma123s-projects.vercel.app).
+The production branch was not merged or redeployed by this change.
+
+The preview is protected by Vercel Authentication. Anonymous POSTs to `/api/leads`
+and `/api/events` returned protection-layer HTTP 401 responses, while GETs followed
+to Vercel's authentication UI. These are not application-level API tests and do not
+verify the preview's deployed environment values or private-file 404s. Open the
+preview using an authorized Vercel account, or use the existing Vercel CLI session's
+authenticated `vercel curl` if available; do not disable deployment protection for
+testing. No local authenticated Vercel CLI was available. Computer Use ended because
+it could not reliably determine the current Windows browser URL; no further UI
+actions or changes to protection/settings were performed. Hosted browser and API
+smoke checks therefore remain manual, distinct from the passing local checks.

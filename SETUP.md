@@ -211,6 +211,12 @@ preview's `.openai/hosting.json`.
    trusting the UI. Replaying the same ID must return the same lead ID. Do not
    delete the request-ID column to simulate a retry. Controlled tests against the
    live adapter have not yet been run.
+   The review deployment is currently protected by Vercel Authentication. Open
+   its PR Preview link while signed into an authorized Vercel account. An HTTP
+   401 from Vercel's protection layer is not the app's capture-disabled response.
+   Keep deployment protection enabled. Also verify `/SETUP.md`, `/apps-script/SmartLearn.gs`
+   and `/.env` are application 404s in the authenticated deployment, and `/api/leads`
+   returns JSON `capture_disabled` while settings remain off.
 7. Keep Production env values unchanged until the preview, external checks and
    client approvals pass. Then merge the review branch to `main`, configure the
    approved Production values (production origin is
