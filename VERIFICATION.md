@@ -1,5 +1,44 @@
 # SmartLearn verification — October 26, 2026
 
+## Current website activation
+
+The user supplied the public Google booking link and selected sales@smartlearn.ca
+as sender/Reply-To. They authorized a generated, site-specific privacy policy and
+public form activation. Confirmed booking settings: sales calendar, 30 minutes,
+Monday–Friday 09:00–17:00 America/Vancouver. The public link returned HTTP 200 and
+the correct discovery-call title; provider availability was not independently read.
+
+Code `47100bf486ffc925107acb0d4cfd65f112e47719` was deployed as Cloudflare version
+`3d62ed81-172b-4063-8bab-a609165c7cf3`. Public mode is live, privacy is published at
+`/privacy.html`, and the booking button links to the supplied Google URL. The notice
+describes current data handling and retention limitations; legal review is not claimed.
+
+Actual website acceptance passed: request `0545f78c-7e5e-4cb6-b492-188a91444e31`,
+lead `6af46c6f-f6d3-40ec-8e97-407d4d417c56`. One click sequence with a repeated click
+caused one capture POST. After Google durably saved it, the test deliberately lost
+the HTTP response. The client showed uncertainty, status reconciliation recovered
+the inquiry, and the handoff independently confirmed receipt. Three concurrent
+same-ID replays returned the same lead. A Google read across the full website-ID
+column found exactly one row, with native date, numeric headcount, attribution and
+blank Meta ID. Only this synthetic row was marked `Integration test (website)` and
+annotated to exclude future production mail. IDs and hashes were preserved.
+
+The deployed test also verified invalid input 422, neutral direct handoff visits,
+connected booking/privacy links and no contact data in browser storage or URLs.
+The public privacy page passed 320/390/1440px checks. Local totals: 30 Node checks
+and 16 browser checks. New mail tests cover the explicit test-mailbox gate, no
+prospect sends, automatic gate reset, duplicate prevention and uncertain sends.
+
+One explicitly authorized Gmail connector test was sent from the sales account
+to the user's authorized test inbox. Inbox readback verified receipt and the
+sales From/Reply-To headers. This proves connector/account delivery only. Apps
+Script mail installation/authorization, automatic acknowledgment/owner delivery,
+calendar booking/reschedule/cancellation and automated inbound events remain
+unverified. Public capture is on; email/follow-ups/events remain off.
+
+The Google synthetic-capture gate was reset after the user's property edits.
+Earlier preview/setup evidence below is historical and predates this activation.
+
 ## Repository and deployment grounding
 
 PR #1 was checked through GitHub and is open, draft and unmerged, with head

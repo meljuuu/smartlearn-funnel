@@ -1,29 +1,31 @@
 # SmartLearn setup and launch handoff
 
 Cloudflare hosting is now also available at
-https://smartlearn-funnel.polarisjumel.workers.dev in deliberate preview mode.
+https://smartlearn-funnel.polarisjumel.workers.dev with user-authorized inquiry capture enabled.
 For that deployment, follow [CLOUDFLARE.md](CLOUDFLARE.md) instead of the Vercel
 hosting section below. The tracker, sender, calendar, privacy and client approval
 dependencies in this guide still apply. The existing Vercel production site was
 not replaced and no DNS/custom-domain changes were made.
 
-Status as checked on October 26, 2026: the existing production site is a deliberate
-preview. Signed Google synthetic capture is verified; public live-form capture,
-email delivery and calendar integration are not verified. No ads or follow-up delivery were
-enabled. No generated ZIP was supplied for this update.
+Status as checked on October 26, 2026: public Cloudflare inquiry capture is enabled
+on the user's explicit instruction. A site-specific privacy notice is published at
+https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html, and the supplied
+Google booking link is connected: https://calendar.app.google/d7D49Ut8wifKxTRB8.
+The notice reflects current implementation and does not claim legal review.
 
-**Current setup progress:** the existing tracker has been prepared in place with
-twelve website/attribution headers and four adapter tabs. Its original native
-table, original A:R fields, date/numeric types, Status dropdown and sharing have
-been preserved. The capture-only source was installed in the bound
-[SmartLearn funnel adapter](https://script.google.com/u/3/home/projects/1bijcWxy-GWCcZHWwnnkLDhkjuo1ZDnFZ22QLunMJoFOzWMolPS0Tj_BE/edit)
-under `sales@smartlearn.ca`; `initializeSmartLearn` completed in Google. The signing
-secret is paired in private Apps Script properties and Cloudflare. With the user's
-approval, version 1 of the Web app was published and its `/exec` URL stored in
-Cloudflare `APPS_SCRIPT_URL`. Three concurrent signed attempts and a replay created
-exactly one labeled synthetic row; the deployed Worker reconciled it through
-Google. The test gate was reset and every public/delivery flag remains false.
-This proves the signed adapter path, not a live public-form/email/calendar journey.
+The real deployed website test passed capture, lost-response recovery, three
+concurrent replays and verified handoff; the actual tracker contains one matching
+row. Automatic email, follow-ups and provider events remain off. The chosen sender
+and Reply-To are both `sales@smartlearn.ca`; [EMAIL-SETUP.md](EMAIL-SETUP.md) has
+exact authorization and safe test steps. The connected Gmail sender test reached
+the authorized test mailbox, independently of Apps Script. A real booking,
+reschedule and cancellation still need external testing.
+
+The existing tracker, bound capture-only Google deployment and paired signing key
+are already installed. Do not reinstall them or rotate the key. Google capture is
+true; its synthetic capture gate is false. Confirmed booking settings from the user:
+30 minutes, Monday-Friday 09:00-17:00 America/Vancouver, owned by the sales account.
+Those provider settings were not independently inspected. No ads were launched.
 
 ## Verified sources and repository
 
@@ -296,9 +298,18 @@ Apps Script, proxies or an automation platform.
 
 ## 3. Authorized mail, replies and stop requests
 
-Required decisions: approved sending mailbox or send-as alias, reply mailbox,
-response owner/backup and an explicitly authorized test mailbox. `info@smartlearn.ca`
-is a booking contact only. None of those delivery settings were verified here.
+Current sender/Reply-To: `sales@smartlearn.ca`, selected by the user. See
+[EMAIL-SETUP.md](EMAIL-SETUP.md) for the current manual setup; its additional
+mail-only file avoids replacing the working capture installation. The account
+owner must complete Google authorization. The manual `sendSmartLearnTestMessages`
+function uses only TEST_EMAIL, requires TEST_EMAIL_ENABLED, resets its gate and
+deduplicates test deliveries without scanning prospects or enabling production mail.
+
+
+The user selected sales@smartlearn.ca for sender and Reply-To and explicitly
+authorized a test inbox. Connector delivery passed; Apps Script runtime mail
+authorization remains pending. Production response owner/backup is still needed.
+info@smartlearn.ca remains the booking contact.
 
 1. In the intended sender's **Gmail → Settings → See all settings → Accounts →
    Send mail as**, verify the approved address is the executing mailbox or an
@@ -311,13 +322,10 @@ is a booking contact only. None of those delivery settings were verified here.
 3. Run `verifySmartLearnSender`. It rejects an unrecognized sender or incomplete
    recipient/reply settings without sending. This checks account capability,
    not client authorization or actual inbox delivery.
-4. In an isolated copy of the tracker/script, capture an inquiry addressed only to
-   the authorized test mailbox. Set that copy's `EMAIL_ENABLED=true` and run
-   `processSmartLearnNotifications` once manually. Check received acknowledgment,
-   owner notification, From, Reply-To and Sent folder; verify two `sent` delivery
-   keys and no extra messages after running it again. Production data must not be
-   used for these development sends. No authorized test mailbox was supplied, so
-   live deliverability has not been tested.
+4. Use the gated `sendSmartLearnTestMessages` procedure in EMAIL-SETUP.md.
+   It sends the two synthetic template tests only to TEST_EMAIL while production
+   email remains false, does not scan prospect rows, resets the test gate and
+   prevents duplicate/uncertain retries. Verify the actual inbox and delivery rows.
 5. Arrange reply/stop detection before automated delivery: an authorized existing
    workflow must watch the actual Reply-To mailbox and forward verified reply and
    stop events to the authenticated adapter below. Until that exists, staff must
@@ -427,9 +435,11 @@ the private contact state plus tracker status; a stop request must remain stoppe
 
 ## 5. Privacy, Meta route and approval dependencies
 
-Obtain the approved privacy-policy URL from SmartLearn; do not treat the preview
-contact dialog as a company policy. It must be configured before live capture.
-No address, phone number, legal approval or invented policy was added.
+On the user's explicit request, a site-specific privacy notice was written and
+published at /privacy.html, configured in Cloudflare and linked next to the form
+acknowledgment. It describes the actual providers, fields, purposes, technical
+identifiers, access and current lack of automated deletion. No legal review,
+company address, privacy-officer identity or fixed retention schedule is claimed.
 
 Website route: ad → landing form → durable capture → booking handoff. An approved
 tracking implementation may subscribe to `smartlearn:captured` with
@@ -449,12 +459,10 @@ Meta lead through `/api/leads` pretending it is a website submission.
 
 Decisions still required from Zakir:
 
-- Calendar URL, authorized host/delegate, duration, availability and time zone.
 - Qualification: minimum company size and business exclusions. Existing form
   accepts all categories/sizes/service areas for review until a rule is approved.
 - Response owner and backup, assignment and response-time expectation.
-- Approved sender, Reply-To routing and follow-up timing/delivery ownership.
-- Approved privacy-policy URL.
+- Follow-up timing and production delivery ownership; sender/Reply-To are selected.
 - Budget and launch approval: CAD $280 over 14 days is a recommendation, not spend
   authorization. Confirm final campaign preview, conversion route, tracking and
   launch date before directing paid traffic. Reported Facebook/Business Portfolio/

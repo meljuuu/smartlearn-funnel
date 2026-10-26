@@ -1,7 +1,8 @@
 # SmartLearn discovery funnel
 
-Review build for Surrey and Langley home-service businesses. Real capture, email,
-follow-ups and calendar integration are **disabled by default**.
+Discovery funnel for Surrey and Langley home-service businesses. The Cloudflare
+website now captures inquiries. Local development defaults to preview. Automatic
+email, follow-ups and provider event ingestion remain disabled.
 
 October 26 update: the user authorized enabling website capture and publishing a
 site-specific privacy policy. Cloudflare's checked-in runtime now uses live capture,
@@ -14,8 +15,8 @@ Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 The existing Google tracker and signed Web app are connected. A real synthetic
 capture with three concurrent attempts and a replay produced exactly one row;
 Cloudflare status reconciliation and manual reply/stop controls also passed.
-Public capture and recipient delivery remain off pending approved settings and
-end-to-end acceptance. See [verification evidence](VERIFICATION.md).
+Public capture is now enabled on explicit user instruction and passed a real
+website test. Recipient automation remains off pending account authorization. See [verification evidence](VERIFICATION.md).
 
 Deploy updates to the authenticated Cloudflare account with
 `npm run deploy:cloudflare`. The Worker serves the existing pages and reuses the
