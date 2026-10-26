@@ -10,7 +10,7 @@ campaign budget or ad delivery settings were changed.
 
 Current update: the user authorized publishing a site-specific privacy notice and
 enabling website capture. The public form now saves inquiries through the existing
-signed Google adapter. Booking URL: https://calendar.app.google/d7D49Ut8wifKxTRB8.
+signed Google adapter. Booking URL: https://calendly.com/smartlearn-sales/30min.
 Privacy URL: https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html.
 The notice describes the implemented workflow; no legal-review approval is claimed.
 
@@ -24,8 +24,10 @@ booking page opens, but an actual appointment/reschedule/cancellation was not cr
 Google Web app version 1 remains the capture-only deployment under
 `sales@smartlearn.ca`. Its URL and signing key are paired privately in Cloudflare.
 The user set Google `CAPTURE_ENABLED=true`; `TEST_CAPTURE_ENABLED` was reset false.
-The optional mail code has been prepared locally and still needs installation and
-account-owner authorization: see [EMAIL-SETUP.md](EMAIL-SETUP.md).
+The mail component is installed and passed its actual two-message test. Production
+delivery stays disabled. Its separate Apps Script `BOOKING_URL` property must also
+be changed to the new Calendly URL before future email delivery; see
+[EMAIL-SETUP.md](EMAIL-SETUP.md).
 
 ## Updating it
 
@@ -75,7 +77,7 @@ Variables and Secrets**, configure:
 | `APPS_SCRIPT_SECRET` | Secret | Already generated and paired with the bound Apps Script property; do not replace during setup |
 | `ALLOWED_ORIGINS` | Text | Already configured in Wrangler: `https://smartlearn-funnel.polarisjumel.workers.dev`; add only approved exact HTTPS origins, comma-separated |
 | `PRIVACY_POLICY_URL` | Text | `https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html` |
-| `BOOKING_URL` | Text | `https://calendar.app.google/d7D49Ut8wifKxTRB8` |
+| `BOOKING_URL` | Text | `https://calendly.com/smartlearn-sales/30min` |
 | `EVENT_INGEST_SECRET` | Secret | Separate private secret for authorized automation, only if events are enabled |
 
 Save/deploy the settings using the dashboard. The checked-in Wrangler vars now enable the user-authorized website capture;

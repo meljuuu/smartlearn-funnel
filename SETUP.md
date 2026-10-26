@@ -10,7 +10,7 @@ not replaced and no DNS/custom-domain changes were made.
 Status as checked on October 26, 2026: public Cloudflare inquiry capture is enabled
 on the user's explicit instruction. A site-specific privacy notice is published at
 https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html, and the supplied
-Google booking link is connected: https://calendar.app.google/d7D49Ut8wifKxTRB8.
+Calendly booking link is connected: https://calendly.com/smartlearn-sales/30min.
 The notice reflects current implementation and does not claim legal review.
 
 The real deployed website test passed capture, lost-response recovery, three
@@ -25,7 +25,11 @@ The existing tracker, bound capture-only Google deployment and paired signing ke
 are already installed. Do not reinstall them or rotate the key. Google capture is
 true; its synthetic capture gate is false. Confirmed booking settings from the user:
 30 minutes, Monday-Friday 09:00-17:00 America/Vancouver, owned by the sales account.
-Those provider settings were not independently inspected. No ads were launched.
+Those earlier Google provider settings were not independently inspected. The user
+subsequently replaced the website destination with the supplied Calendly URL;
+Calendly availability settings have not been independently verified. The separate
+Apps Script `BOOKING_URL` property also needs that URL before future email sends.
+No ads were launched.
 
 ## Verified sources and repository
 

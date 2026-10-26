@@ -1,5 +1,12 @@
 # Authorize SmartLearn email
 
+Calendar update: the website now uses
+`https://calendly.com/smartlearn-sales/30min`. In the existing Apps Script project,
+update the private `BOOKING_URL` property to this same value before future email
+delivery. This property change requires Save, not a Web app redeployment.
+The mail component has since passed its actual two-message test; the setup steps
+below remain a reference. Production email and follow-ups remain disabled.
+
 Chosen sender and Reply-To: `sales@smartlearn.ca`. The booking contact remains
 `info@smartlearn.ca`. The account's connected Gmail sender test reached the
 explicitly authorized test inbox with the correct From/Reply-To headers. That
@@ -30,7 +37,7 @@ the existing signing key unchanged. Configure:
 | --- | --- |
 | `SENDER_EMAIL` | `sales@smartlearn.ca` |
 | `REPLY_TO_EMAIL` | `sales@smartlearn.ca` |
-| `BOOKING_URL` | `https://calendar.app.google/d7D49Ut8wifKxTRB8` |
+| `BOOKING_URL` | `https://calendly.com/smartlearn-sales/30min` |
 | `TEST_EMAIL` | The test inbox explicitly authorized in this conversation |
 | `TEST_EMAIL_ENABLED` | `true`, only for this manual test |
 | `EMAIL_ENABLED` | `false` |
