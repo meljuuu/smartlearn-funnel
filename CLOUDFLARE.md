@@ -18,8 +18,10 @@ The parent page does not infer a booking or update a tracker status from frame e
 Privacy URL: https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html.
 The notice describes the implemented workflow; no legal-review approval is claimed.
 
-Deployed code: `47100bf486ffc925107acb0d4cfd65f112e47719`.
-Worker version: `3d62ed81-172b-4063-8bab-a609165c7cf3`.
+The earlier full capture acceptance used code
+`47100bf486ffc925107acb0d4cfd65f112e47719`, Worker version
+`3d62ed81-172b-4063-8bab-a609165c7cf3`. Subsequent booking/embed updates retain
+that capture implementation; read X-SmartLearn-Build for the current revision.
 A real website inquiry survived a deliberately lost response, status recovery and
 three concurrent same-ID replays. The actual tracker has exactly one matching row.
 Email, follow-ups and authenticated provider events remain disabled. The supplied
@@ -186,6 +188,10 @@ for historical setup evidence and remaining limits. Deployed test scripts and
 screenshots are retained under ignored .review/.
 
 ## Rollback
+
+For the inline-calendar change only, roll back to
+`e65fd015-764e-4ab8-9337-0d0cc0bfb7fa`, which keeps live capture, Calendly's
+external link and the current signing-key binding without the embed.
 
 To return to the immediately preceding deliberate-preview deployment, run
 `npx wrangler rollback 6e60b725-d77d-4012-832d-3590b11c9078 --name smartlearn-funnel`.

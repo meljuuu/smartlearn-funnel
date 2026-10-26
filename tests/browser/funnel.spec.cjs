@@ -27,6 +27,7 @@ test('Calendly embeds inline at desktop/mobile widths without asserting a bookin
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/thank-you.html?mode=received');
     await expect(page.locator('#booking-calendar')).toBeVisible();
+    await expect(page.locator('#booking-scroll')).toBeVisible();
     await expect(page.locator('#booking-frame')).toHaveAttribute('src', calendar);
     await page.locator('#booking-frame').scrollIntoViewIfNeeded();
     await expect(page.frameLocator('#booking-frame').getByRole('heading')).toHaveText('Test booking calendar');
@@ -48,6 +49,7 @@ test('preview never loads a real calendar and other providers keep a link withou
   await expect(page.locator('#booking-calendar')).toBeHidden();
   await expect(page.locator('#booking-frame')).not.toHaveAttribute('src');
   await expect(page.locator('#booking-button')).toBeHidden();
+  await expect(page.locator('#booking-scroll')).toBeHidden();
   await expect(page.locator('#booking-note')).toContainText('preview');
   expect(calendarRequests).toBe(0);
   await configure(page, { ...live, bookingUrl: 'https://calendar.example.invalid/book' });

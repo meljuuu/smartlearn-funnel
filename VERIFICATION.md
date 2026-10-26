@@ -17,6 +17,14 @@ a separate deployed check. No appointment was created by the tests.
 
 Implementation followed [Calendly's iframe guidance](https://calendly.com/help/how-to-embed-calendly-with-an-iframe).
 
+The actual deployed Calendly frame also rendered the real discovery-call schedule
+at 1440px, 390px and 320px, including its 30-minute event and date picker. Both the
+outer page and provider document fit their viewport; the deployed frame policy
+allowed the exact provider. Screenshots are retained under ignored .review/.
+The main action scrolls to the inline calendar; the external link is secondary.
+Preparation tips follow the calendar. No appointment or lead was created by this
+rendering check. Follow-up layout adjustments passed all six related browser checks.
+
 ## Current website activation
 
 The user supplied the public Google booking link and selected sales@smartlearn.ca

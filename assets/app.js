@@ -167,6 +167,8 @@
         section.hidden = false;
         document.querySelector('#booking-frame').src = url.href;
         booking.textContent = 'Open calendar in a new tab ↗';
+        document.querySelector('#booking-fallback').appendChild(booking);
+        document.querySelector('#booking-scroll').hidden = false;
         description.textContent = 'Choose a time below. Calendly will confirm your appointment after you complete the booking.';
         status.textContent = 'CHOOSE A CALL TIME';
         embeddedBooking = true;
