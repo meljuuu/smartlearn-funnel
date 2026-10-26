@@ -3,6 +3,12 @@
 Review build for Surrey and Langley home-service businesses. Real capture, email,
 follow-ups and calendar integration are **disabled by default**.
 
+October 26 update: the user authorized enabling website capture and publishing a
+site-specific privacy policy. Cloudflare's checked-in runtime now uses live capture,
+the hosted `/privacy.html` notice and the supplied Google booking URL. Local
+development still defaults to preview; email, follow-ups and provider events stay off.
+See [email authorization](EMAIL-SETUP.md) for the chosen sales mailbox setup.
+
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 
 The existing Google tracker and signed Web app are connected. A real synthetic

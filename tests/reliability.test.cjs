@@ -6,6 +6,26 @@ const { verifyAdapter } = require('../server/verify-google.cjs');
 const { createHandler } = require('../api/leads.js');
 function mail(h) { Object.assign(h.props, { EMAIL_ENABLED: 'true', SENDER_EMAIL: 'authorized@example.invalid', REPLY_TO_EMAIL: 'reply@example.invalid', OWNER_NOTIFICATION_EMAILS: 'owner@example.invalid', BOOKING_CONFIRMATION_SYSTEM: 'adapter' }); }
 function booking(h, leadId, overrides = {}) { return { type: 'booked', eventId: 'provider:one', leadId, email: 'test@example.invalid', occurredAt: '2026-10-26T01:00:00Z', bookingId: 'provider-booking', dateTime: '2026-10-30T10:00:00-07:00', timeZone: 'America/Vancouver', host: 'Test Host', meetingUrl: 'https://example.invalid/meeting', rescheduleUrl: 'https://example.invalid/reschedule', ...overrides }; }
+
+test('manual mail authorization test targets only its approved mailbox, resets its gate and deduplicates reruns', () => {
+  const h = scriptHarness();
+  h.post({ action: 'capture', lead: lead({ email: 'prospect@example.invalid' }), clientKey: 'test' });
+  Object.assign(h.props, { SENDER_EMAIL: 'authorized@example.invalid', REPLY_TO_EMAIL: 'authorized@example.invalid', TEST_EMAIL: 'approved-test@example.invalid' });
+  assert.throws(() => h.context.sendSmartLearnTestMessages(), /one-time/);
+  h.props.TEST_EMAIL_ENABLED = 'true'; h.context.sendSmartLearnTestMessages();
+  assert.equal(h.sent.length, 2); assert.ok(h.sent.every(args => args[0] === h.props.TEST_EMAIL));
+  assert.ok(h.sent.every(args => args[1].startsWith('[TEST]')));
+  assert.equal(h.props.TEST_EMAIL_ENABLED, 'false'); assert.notEqual(h.props.EMAIL_ENABLED, 'true');
+  h.props.TEST_EMAIL_ENABLED = 'true'; h.context.sendSmartLearnTestMessages(); assert.equal(h.sent.length, 2);
+});
+
+test('uncertain test mail is held without retrying or touching prospect delivery', () => {
+  const h = scriptHarness();
+  Object.assign(h.props, { SENDER_EMAIL: 'authorized@example.invalid', REPLY_TO_EMAIL: 'authorized@example.invalid', TEST_EMAIL: 'approved-test@example.invalid', TEST_EMAIL_ENABLED: 'true', failMail: true });
+  h.context.sendSmartLearnTestMessages(); assert.equal(h.sent.length, 2);
+  assert.equal(h.post({ action: 'health' }).delivery.uncertain, 2);
+  h.props.TEST_EMAIL_ENABLED = 'true'; h.context.sendSmartLearnTestMessages(); assert.equal(h.sent.length, 2);
+});
 test('native tracker receives real Date and numeric headcount, never range labels; writes grow the grid safely', () => {
   const h = scriptHarness(), sheet = h.sheets.get('Leads & Discovery Calls'); sheet.maxRows = 1;
   const result = h.post({ action: 'capture', lead: lead({ team_size: '25' }), clientKey: 'test' });

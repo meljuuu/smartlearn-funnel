@@ -247,10 +247,41 @@ function slBusinessDaysElapsed(start, end, timeZone) {
   return count;
 }
 function verifySmartLearnSender() {
-  var cfg = slMailConfig(), effective = Session.getEffectiveUser().getEmail().toLowerCase();
+  return slVerifySender(slMailConfig());
+}
+function slVerifySender(cfg) {
+  var effective = Session.getEffectiveUser().getEmail().toLowerCase();
   if (!SmartLearnCore.email.test(cfg.from) || !SmartLearnCore.email.test(cfg.replyTo) || !cfg.owners || cfg.owners.split(',').some(function(x) { return !SmartLearnCore.email.test(x.trim()); })) throw new Error('Set authorized sender, reply routing and owner/backup recipients first');
   if (cfg.from.toLowerCase() !== effective && !GmailApp.getAliases().map(function(x) { return x.toLowerCase(); }).includes(cfg.from.toLowerCase())) throw new Error('Sender is neither the executing mailbox nor an authorized Gmail send-as alias');
   return cfg; // No messages sent by this verification function.
+}
+// Manual authorization test only. Never scans or emails prospect rows.
+function sendSmartLearnTestMessages() {
+  var p = slProperties(), recipient = (p.getProperty('TEST_EMAIL') || '').trim().toLowerCase();
+  if (p.getProperty('TEST_EMAIL_ENABLED') !== 'true' || !SmartLearnCore.email.test(recipient)) throw new Error('Set an explicitly authorized TEST_EMAIL and enable the one-time TEST_EMAIL_ENABLED gate');
+  if (p.getProperty('EMAIL_ENABLED') === 'true' || p.getProperty('FOLLOWUPS_ENABLED') === 'true') throw new Error('Keep production email and followups off during this test');
+  var cfg = slMailConfig(); cfg.owners = recipient; cfg = slVerifySender(cfg);
+  var lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    p.setProperty('TEST_EMAIL_ENABLED', 'false');
+    var delivery = slTable(slBook(), SL_DELIVERY), sent = 0, held = 0;
+    var lead = { full_name: 'Synthetic Test', business_name: 'SYNTHETIC AUTHORIZATION TEST', email: recipient, leadId: 'synthetic-email-test' };
+    ['ack', 'owner'].forEach(function(kind) {
+      var key = 'mail-test:' + slHash(cfg.from.toLowerCase() + ':' + cfg.replyTo.toLowerCase() + ':' + recipient) + ':' + kind;
+      if (slFind(delivery, 1, key)) { held++; return; }
+      var mail = SmartLearnCore.message(kind, lead, cfg), row = slAppend(delivery, [key, 'sending', new Date().toISOString()]);
+      SpreadsheetApp.flush();
+      try {
+        var options = { name: 'SmartLearn', replyTo: cfg.replyTo };
+        if (cfg.from.toLowerCase() !== Session.getEffectiveUser().getEmail().toLowerCase()) options.from = cfg.from;
+        GmailApp.sendEmail(recipient, '[TEST] ' + mail.subject, 'Authorized development test using synthetic details. No appointment is created.\n\n' + mail.body, options);
+        delivery.getRange(row, 2, 1, 2).setValues([['sent', new Date().toISOString()]]); sent++;
+      } catch (error) { delivery.getRange(row, 2, 1, 2).setValues([['uncertain', new Date().toISOString()]]); held++; }
+      SpreadsheetApp.flush();
+    });
+    console.log(JSON.stringify({ testMessagesSent: sent, held: held, testGateEnabled: false }));
+    return { sent: sent, held: held };
+  } finally { lock.releaseLock(); }
 }
 // No trigger is installed automatically. Run only after authorized test delivery.
 function processSmartLearnNotifications() {

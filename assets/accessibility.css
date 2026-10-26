@@ -13,6 +13,9 @@ input,select{font-size:16px!important;max-width:100%}
 .thank-card,.form-card,.form-layout>*,.footer-inner>*{min-width:0;overflow-wrap:anywhere}
 .brand img{object-fit:contain;background:#101317}
 .float-card .mini-label{color:#50565d}.card-tools .mini-label{color:#c4cbd2}
+.privacy-policy h2{font-size:24px;letter-spacing:-.5px;margin-top:30px}
+.privacy-policy p{font-size:15px;line-height:1.8;color:#50565d}
+.privacy-policy a{overflow-wrap:anywhere;text-underline-offset:3px}
 @media(max-width:400px){
  .nav{gap:8px}.nav .brand{font-size:18px;gap:6px}.nav .brand img{width:30px;height:30px}
  .nav .button.small{max-width:125px;white-space:normal;text-align:center}

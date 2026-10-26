@@ -17,6 +17,26 @@ async function contact(page) {
   await page.locator('#email').fill('test@example.invalid');
   await page.locator('#consent').check();
 }
+
+test('published privacy page is reachable, readable on mobile and returns to the inquiry', async ({ page }) => {
+  await configure(page, { ...live, privacyUrl: 'https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html' });
+  await page.goto('/');
+  await expect(page.locator('#privacy-link')).toHaveAttribute('href', 'https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html');
+  await expect(page.locator('.privacy-note')).toContainText('private Google Workspace tracker');
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const response = await page.goto('/privacy.html');
+    expect(response.status()).toBe(200);
+    await expect(page.locator('main h1')).toHaveText('Privacy policy');
+    await expect(page.locator('main')).toContainText('automatic deletion schedule');
+    await expect(page.locator('main')).toContainText('Cloudflare');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `.review/privacy-${width}.png`, fullPage: true });
+  }
+  await page.locator('main a.button').click();
+  await expect(page).toHaveURL(/index\.html#discovery$/);
+  await expect(page.locator('#discovery-form')).toBeVisible();
+});
 test('required fields, whitespace, malformed email, acknowledgment, keyboard order and back navigation', async ({ page }) => {
   await configure(page); await page.goto('/');
   await page.locator('#next-step').click();
