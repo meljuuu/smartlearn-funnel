@@ -11,6 +11,10 @@ campaign budget or ad delivery settings were changed.
 Current update: the user authorized publishing a site-specific privacy notice and
 enabling website capture. The public form now saves inquiries through the existing
 signed Google adapter. Booking URL: https://calendly.com/smartlearn-sales/30min.
+The next-steps page embeds that Calendly schedule inline, with an external fallback
+link. Only the exact Calendly origin is permitted by frame-src; no external embed
+script or appointment-event listener was added. Preview does not load the calendar.
+The parent page does not infer a booking or update a tracker status from frame events.
 Privacy URL: https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html.
 The notice describes the implemented workflow; no legal-review approval is claimed.
 

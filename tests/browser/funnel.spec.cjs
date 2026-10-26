@@ -18,6 +18,53 @@ async function contact(page) {
   await page.locator('#consent').check();
 }
 
+test('Calendly embeds inline at desktop/mobile widths without asserting a booking or sending inquiry data', async ({ page }) => {
+  const calendar = 'https://calendly.com/smartlearn-sales/30min';
+  await configure(page, { ...live, bookingUrl: calendar });
+  await page.route('https://calendly.com/**', route => route.fulfill({ contentType: 'text/html', body: '<html><body><h1>Test booking calendar</h1></body></html>' }));
+  let leadRequests = 0; page.on('request', request => { if (request.url().endsWith('/api/leads')) leadRequests++; });
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/thank-you.html?mode=received');
+    await expect(page.locator('#booking-calendar')).toBeVisible();
+    await expect(page.locator('#booking-frame')).toHaveAttribute('src', calendar);
+    await page.locator('#booking-frame').scrollIntoViewIfNeeded();
+    await expect(page.frameLocator('#booking-frame').getByRole('heading')).toHaveText('Test booking calendar');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const frame = await page.locator('#booking-frame').boundingBox(); expect(frame.width).toBeGreaterThanOrEqual(320);
+    await expect(page.locator('#request-status')).toHaveText('CHOOSE A CALL TIME');
+  }
+  await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', { origin: 'https://calendly.com', data: { event: 'calendly.event_scheduled' } })));
+  await expect(page.locator('#request-status')).toHaveText('CHOOSE A CALL TIME');
+  await expect(page.locator('#booking-button')).toHaveAttribute('href', calendar);
+  await expect(page.locator('#booking-button')).toHaveAttribute('target', '_blank');
+  expect(leadRequests).toBe(0);
+});
+
+test('preview never loads a real calendar and other providers keep a link without an embed', async ({ page }) => {
+  let calendarRequests = 0; page.on('request', request => { if (request.url().startsWith('https://calendly.com/')) calendarRequests++; });
+  await configure(page, { ...live, previewMode: true, bookingUrl: 'https://calendly.com/smartlearn-sales/30min' });
+  await page.goto('/thank-you.html');
+  await expect(page.locator('#booking-calendar')).toBeHidden();
+  await expect(page.locator('#booking-frame')).not.toHaveAttribute('src');
+  await expect(page.locator('#booking-button')).toBeHidden();
+  await expect(page.locator('#booking-note')).toContainText('preview');
+  expect(calendarRequests).toBe(0);
+  await configure(page, { ...live, bookingUrl: 'https://calendar.example.invalid/book' });
+  await page.reload();
+  await expect(page.locator('#booking-calendar')).toBeHidden();
+  await expect(page.locator('#booking-button')).toHaveAttribute('href', 'https://calendar.example.invalid/book');
+});
+
+test('blocked Calendly frame retains the external fallback and neutral appointment state', async ({ page }) => {
+  await configure(page, { ...live, bookingUrl: 'https://calendly.com/smartlearn-sales/30min' });
+  await page.route('https://calendly.com/**', route => route.abort('failed'));
+  await page.goto('/thank-you.html'); await page.locator('#booking-frame').scrollIntoViewIfNeeded();
+  await expect(page.locator('#booking-button')).toBeVisible();
+  await expect(page.locator('#booking-button')).toHaveText('Open calendar in a new tab ↗');
+  await expect(page.locator('#request-status')).toHaveText('CHOOSE A CALL TIME');
+});
+
 test('published privacy page is reachable, readable on mobile and returns to the inquiry', async ({ page }) => {
   await configure(page, { ...live, privacyUrl: 'https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html' });
   await page.goto('/');

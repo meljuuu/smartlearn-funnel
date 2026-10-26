@@ -158,8 +158,23 @@
     description.textContent = 'Contact the SmartLearn team to arrange a time. This page does not confirm an inquiry or an appointment.';
     status.textContent = 'CALL TIME NOT YET CONFIRMED';
     const booking = document.querySelector('#booking-button');
-    if (https(cfg.bookingUrl)) { booking.href = cfg.bookingUrl; booking.hidden = false; }
-    else { document.querySelector('#booking-note').hidden = false; }
+    let embeddedBooking = false;
+    if (!preview && https(cfg.bookingUrl)) {
+      booking.href = cfg.bookingUrl; booking.hidden = false;
+      const url = new URL(cfg.bookingUrl);
+      if (live && url.origin === 'https://calendly.com' && url.pathname !== '/') {
+        const section = document.querySelector('#booking-calendar');
+        section.hidden = false;
+        document.querySelector('#booking-frame').src = url.href;
+        booking.textContent = 'Open calendar in a new tab ↗';
+        description.textContent = 'Choose a time below. Calendly will confirm your appointment after you complete the booking.';
+        status.textContent = 'CHOOSE A CALL TIME';
+        embeddedBooking = true;
+      }
+    } else {
+      const note = document.querySelector('#booking-note'); note.hidden = false;
+      if (preview) note.textContent = 'Calendar booking is disabled in this preview. No appointment has been booked.';
+    }
     const receipt = storage.get(receiptKey);
     if (receipt?.preview && preview && Date.now() - receipt.at < 3600000) {
       status.textContent = 'PREVIEW COMPLETE · NO INFORMATION SENT';
@@ -169,8 +184,8 @@
       request({ action: 'status', request_id: receipt.request_id }).then(body => {
         if (!captured(body)) throw new Error('unconfirmed');
         title.textContent = 'Thanks for your inquiry.';
-        description.textContent = 'Your inquiry was received. Choose a time if booking is available, or email the team to arrange your discovery call.';
-        status.textContent = 'INQUIRY RECEIVED · CALL TIME NOT YET CONFIRMED';
+        description.textContent = embeddedBooking ? 'Your inquiry was received. Choose a time below to book your discovery call.' : 'Your inquiry was received. Choose a time if booking is available, or email the team to arrange your discovery call.';
+        status.textContent = embeddedBooking ? 'INQUIRY RECEIVED' : 'INQUIRY RECEIVED · CALL TIME NOT YET CONFIRMED';
       }).catch(() => { description.textContent = 'We cannot verify receipt right now. Contact info@smartlearn.ca before submitting another inquiry. No appointment is confirmed.'; });
     }
   }

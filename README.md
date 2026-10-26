@@ -12,6 +12,11 @@ See [email authorization](EMAIL-SETUP.md) for the chosen sales mailbox setup.
 
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 
+After capture, the next-steps page now includes the supplied Calendly schedule
+inline, with a new-tab fallback. Direct visits remain neutral; preview does not
+load real booking. Appointment status still requires the separately verified event
+integration. The privacy notice describes Calendly's embedded service.
+
 The existing Google tracker and signed Web app are connected. A real synthetic
 capture with three concurrent attempts and a replay produced exactly one row;
 Cloudflare status reconciliation and manual reply/stop controls also passed.

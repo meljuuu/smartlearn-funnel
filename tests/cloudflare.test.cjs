@@ -12,6 +12,11 @@ test('Cloudflare serves only public config, preserves neutral modes and applies 
   assert.ok(!body.includes('never-public'));
   assert.equal(preview.headers.get('Cache-Control'), 'no-store');
   assert.ok(preview.headers.get('Content-Security-Policy').includes("frame-ancestors 'none'"));
+  const policy = preview.headers.get('Content-Security-Policy');
+  assert.ok(policy.includes('frame-src https://calendly.com;'));
+  assert.ok(policy.includes("script-src 'self';"));
+  const vercelPolicy = require('../vercel.json').headers[0].headers.find(header => header.key === 'Content-Security-Policy').value;
+  assert.equal(vercelPolicy, policy);
   const invalid = await worker.fetch(new Request(origin + '/assets/config.js'), { ...env, FUNNEL_MODE: 'live' });
   const config = await invalid.text();
   assert.ok(config.includes('"previewMode":false')); assert.ok(config.includes('"leadEndpoint":""'));

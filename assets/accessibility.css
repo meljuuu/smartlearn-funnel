@@ -16,6 +16,12 @@ input,select{font-size:16px!important;max-width:100%}
 .privacy-policy h2{font-size:24px;letter-spacing:-.5px;margin-top:30px}
 .privacy-policy p{font-size:15px;line-height:1.8;color:#50565d}
 .privacy-policy a{overflow-wrap:anywhere;text-underline-offset:3px}
+.booking-calendar{max-width:1100px;margin:28px auto 0;padding:28px 0 0;border:1px solid var(--line);border-radius:24px;background:#fff;overflow:hidden}
+.booking-intro{padding:0 28px}.booking-intro h2{font-size:28px;letter-spacing:-.8px;margin-bottom:12px}
+.booking-intro p{font-size:14px;color:#50565d;margin-bottom:20px}
+.booking-frame{display:block;width:100%;height:820px;border:0;background:#fff}
+@media(max-width:760px){.booking-frame{height:1100px}.booking-calendar{border-radius:18px}.booking-intro{padding:0 20px}}
+@media(max-width:380px){.booking-calendar{width:100vw;max-width:none;margin-left:calc((100% - 100vw)/2);border-left:0;border-right:0;border-radius:0}.booking-frame{min-width:320px}}
 @media(max-width:400px){
  .nav{gap:8px}.nav .brand{font-size:18px;gap:6px}.nav .brand img{width:30px;height:30px}
  .nav .button.small{max-width:125px;white-space:normal;text-align:center}

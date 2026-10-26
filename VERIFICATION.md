@@ -1,5 +1,22 @@
 # SmartLearn verification — October 26, 2026
 
+## Calendly inline embed update
+
+The supplied Calendly event is embedded in the existing handoff page. A basic
+iframe keeps external scripts out of the parent document; Cloudflare and Vercel
+policies permit only https://calendly.com for frames. The section fits the provider's
+320px minimum at the smallest tested width. An external link stays available when
+the frame is blocked. Preview loads no calendar. Contact details are not prefilled
+into URLs, and unverified frame messages cannot assert a booking or send lead events.
+The privacy notice now describes the embedded provider and its cookie controls.
+
+Local checks: 30 Node tests and 19 browser checks, including 320/390/1440px embed
+layout, preview suppression, blocked-frame fallback and neutral receipt/booking
+state. The iframe content in local checks is mocked; actual provider rendering is
+a separate deployed check. No appointment was created by the tests.
+
+Implementation followed [Calendly's iframe guidance](https://calendly.com/help/how-to-embed-calendly-with-an-iframe).
+
 ## Current website activation
 
 The user supplied the public Google booking link and selected sales@smartlearn.ca
