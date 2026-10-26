@@ -1,5 +1,11 @@
 # SmartLearn setup and launch handoff
 
+The October 26 landing-page redesign needs no new account, variable, integration
+or dependency. Its 35-reference design log and asset details are in
+[DESIGN-RESEARCH.md](DESIGN-RESEARCH.md); verification and the prior deployment
+rollback are in [CLOUDFLARE.md](CLOUDFLARE.md). Existing integration setup below
+continues to apply. No new real submissions or email sends were made for design QA.
+
 Cloudflare hosting is now also available at
 https://smartlearn-funnel.polarisjumel.workers.dev with user-authorized inquiry capture enabled.
 For that deployment, follow [CLOUDFLARE.md](CLOUDFLARE.md) instead of the Vercel

@@ -2,6 +2,29 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
+## Landing-page redesign (October 26)
+
+The presentation update keeps the existing runtime configuration and capture
+contract. It removes the decorative badges, floating cards and glows; adds an
+original responsive workflow illustration; rewrites the public explanation; and
+improves form text and responsive layout. See [design research](DESIGN-RESEARCH.md)
+for all 35 references, asset provenance and the generation prompt.
+
+Verification: `npm run build`, 30 Node tests and 24 Chrome browser tests passed.
+Screenshots reviewed at 320, 390, 768 and 1440 pixels, including both form steps.
+Browser capture/calendar responses are mocked; this redesign did not submit a
+live inquiry, book a call, send mail or change delivery gates. Original logo bytes
+and every input/select definition were compared with the preceding commit.
+The live build is identified by `X-SmartLearn-Build` on `/assets/config.js`.
+
+Before this redesign, the Worker version was
+`9397254d-3191-4eda-a459-9d6ec30397d8`, code commit `6e84f38274fae8f3212980805c9c66d62e388ae3`.
+To undo just the redesign, use Cloudflare dashboard → Workers & Pages →
+smartlearn-funnel → Deployments → that preceding version → Rollback; or run
+`npx wrangler rollback 9397254d-3191-4eda-a459-9d6ec30397d8` from this repository.
+Then verify the former page and that `/assets/config.js` still reports live
+capture and the existing Calendly/privacy URLs. Do not change server secrets.
+
 Deployed October 26, 2026 to the existing Cloudflare account authenticated as
 `polarisjumel@gmail.com`, Worker `smartlearn-funnel`. No existing Worker with that
 name was found before deployment. The existing unrelated Pages project and Vercel

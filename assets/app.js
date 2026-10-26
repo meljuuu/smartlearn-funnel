@@ -40,6 +40,7 @@
       step = n;
       steps.forEach((el, i) => { el.hidden = i !== n - 1; el.disabled = i !== n - 1; });
       document.querySelector('#step-label').textContent = `Step ${n} of 2`;
+      document.querySelector('#form-title').textContent = n === 1 ? 'Your business' : 'Your contact details';
       document.querySelector('#progress').style.width = `${n * 50}%`;
       errors.hidden = true;
       steps[n - 1].querySelector('input,select')?.focus();

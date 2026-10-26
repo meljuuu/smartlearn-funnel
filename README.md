@@ -6,11 +6,16 @@ email, follow-ups and provider event ingestion remain disabled.
 
 October 26 update: the user authorized enabling website capture and publishing a
 site-specific privacy policy. Cloudflare's checked-in runtime now uses live capture,
-the hosted `/privacy.html` notice and the supplied Google booking URL. Local
+the hosted `/privacy.html` notice and the supplied Calendly booking URL. Local
 development still defaults to preview; email, follow-ups and provider events stay off.
 See [email authorization](EMAIL-SETUP.md) for the chosen sales mailbox setup.
 
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
+
+The landing-page design now uses natural copy, open sections, a responsive original
+workflow illustration and readable form text. [Design research](DESIGN-RESEARCH.md)
+records 35 reference sites, decisions and asset provenance. No new dependencies or
+integration settings are required. Design QA covers 30 Node / 24 browser tests.
 
 After capture, the next-steps page now includes the supplied Calendly schedule
 inline, with a new-tab fallback. Direct visits remain neutral; preview does not

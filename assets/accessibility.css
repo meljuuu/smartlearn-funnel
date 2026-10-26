@@ -1,34 +1,5 @@
-/* Readability and narrow-screen fixes, preserving the established composition. */
-input,select{font-size:16px!important;max-width:100%}
-.field label,.consent{font-size:13px}
-.label-note,.privacy-note,.form-footnote,.form-preview,.step-label{font-size:12px;color:#58616b}
-.contact-block>span{color:#b8c0c8}
-.workflow-tag{color:#626a73}
-.card-center .mini-label{color:#75601f}
-.field [aria-invalid=true],.consent input[aria-invalid=true]{outline:2px solid #a82b2b;outline-offset:2px}
-:focus-visible{outline:3px solid #92730c;outline-offset:4px}
-.form-section a:focus-visible,.header a:focus-visible{outline-color:#faca21}
-.error-summary{font-size:14px;overflow-wrap:anywhere}
-.recovery-actions{margin-top:16px}
-.thank-card,.form-card,.form-layout>*,.footer-inner>*{min-width:0;overflow-wrap:anywhere}
-.brand img{object-fit:contain;background:#101317}
-.float-card .mini-label{color:#50565d}.card-tools .mini-label{color:#c4cbd2}
-.privacy-policy h2{font-size:24px;letter-spacing:-.5px;margin-top:30px}
-.privacy-policy p{font-size:15px;line-height:1.8;color:#50565d}
-.privacy-policy a{overflow-wrap:anywhere;text-underline-offset:3px}
-.booking-calendar{max-width:1100px;margin:28px auto 0;padding:28px 0 0;border:1px solid var(--line);border-radius:24px;background:#fff;overflow:hidden}
-.booking-intro{padding:0 28px}.booking-intro h2{font-size:28px;letter-spacing:-.8px;margin-bottom:12px}
-.booking-intro p{font-size:14px;color:#50565d;margin-bottom:20px}
-.booking-frame{display:block;width:100%;height:820px;border:0;background:#fff}
-.booking-fallback{padding:0 28px 18px}.booking-fallback .button{border:0;padding:0;border-radius:0;background:transparent;font-size:13px;text-decoration:underline;text-underline-offset:3px}
-.thank-preparation{margin-top:28px}
-@media(max-width:760px){.booking-frame{height:950px}.booking-calendar{border-radius:18px}.booking-intro{padding:0 20px}.booking-fallback{padding:0 20px 18px}}
+﻿/* Focus, error and shared handoff safeguards. */
+:focus-visible{outline:3px solid #92730c;outline-offset:4px}.form-section a:focus-visible,.header a:focus-visible,footer a:focus-visible{outline-color:#faca21}.field [aria-invalid=true],.consent input[aria-invalid=true]{outline:2px solid #a82b2b;outline-offset:2px}.error-summary{overflow-wrap:anywhere}.thank-card,.form-card,.form-layout>*,.footer-inner>*{min-width:0;overflow-wrap:anywhere}.brand img{background:#101317}.privacy-policy h2{font-size:27px;margin-top:32px}.privacy-policy p{font-size:17px;line-height:1.8;color:#50565d}.privacy-policy a{overflow-wrap:anywhere}
+.booking-calendar{max-width:1100px;margin:28px auto 0;padding:28px 0 0;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}.booking-intro{padding:0 28px}.booking-intro h2{font-size:30px;margin-bottom:12px}.booking-intro p{font-size:17px;color:#50565d;margin-bottom:20px}.booking-frame{display:block;width:100%;height:820px;border:0;background:#fff}.booking-fallback{padding:0 28px 18px}.booking-fallback .button{border:0;padding:8px 0;border-radius:0;background:transparent;font-size:16px;text-decoration:underline;text-underline-offset:4px}.thank-preparation{margin-top:28px}
+@media(max-width:760px){.booking-frame{height:950px}.booking-intro{padding:0 20px}.booking-fallback{padding:0 20px 18px}}
 @media(max-width:380px){.booking-calendar{width:100vw;max-width:none;margin-left:calc((100% - 100vw)/2);border-left:0;border-right:0;border-radius:0}.booking-frame{min-width:320px}}
-@media(max-width:400px){
- .nav{gap:8px}.nav .brand{font-size:18px;gap:6px}.nav .brand img{width:30px;height:30px}
- .nav .button.small{max-width:125px;white-space:normal;text-align:center}
- .hero-copy .eyebrow{white-space:normal}
- .form-intro h2{font-size:32px}.contact-block a{font-size:15px}
- .footer-inner{grid-template-columns:1fr}.footer-inner .brand{grid-column:auto}
- .button{white-space:normal}
-}
