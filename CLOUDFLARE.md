@@ -2,7 +2,25 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
-## Landing-page redesign (October 26)
+## Current photographic redesign (October 26)
+
+The latest visual update adds original workshop photography, a full-width dark
+hero, an overlapping workflow strip, a varied problem layout, a dark connected
+process band and a polished light form panel. [PHOTO-DESIGN.md](PHOTO-DESIGN.md)
+records asset sources, prompts, verification and the unavailable-attachment limit.
+Runtime settings and integrations are unchanged. No real leads or messages were
+sent for visual QA. The updated suite has 30 Node and 25 Chrome browser tests.
+
+The immediately preceding deployment is Worker version
+`ee180500-847d-4359-9446-6af64feac276`, commit
+`db1165500f1ca12ef09938482a0db24a43cd8d40` (cream editorial layout).
+To restore it, use Workers & Pages → smartlearn-funnel → Deployments → that
+version → Rollback, or run
+`npx wrangler rollback ee180500-847d-4359-9446-6af64feac276`.
+Check `/assets/config.js` for the restored build ID and unchanged capture/calendar
+settings. No secret changes are needed.
+
+## Earlier editorial redesign (October 26)
 
 The presentation update keeps the existing runtime configuration and capture
 contract. It removes the decorative badges, floating cards and glows; adds an

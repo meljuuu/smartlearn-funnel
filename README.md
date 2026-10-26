@@ -12,10 +12,12 @@ See [email authorization](EMAIL-SETUP.md) for the chosen sales mailbox setup.
 
 Cloudflare review deployment: https://smartlearn-funnel.polarisjumel.workers.dev
 
-The landing-page design now uses natural copy, open sections, a responsive original
-workflow illustration and readable form text. [Design research](DESIGN-RESEARCH.md)
-records 35 reference sites, decisions and asset provenance. No new dependencies or
-integration settings are required. Design QA covers 30 Node / 24 browser tests.
+The landing page now uses original workshop photography, a bold dark hero,
+overlapping sections, yellow process numbers and a polished light form panel.
+[Current design notes](PHOTO-DESIGN.md) record the assets, prompts and checks;
+[earlier research](DESIGN-RESEARCH.md) preserves the 35-site reference log.
+No new dependencies or integration settings are required. Current design QA
+covers 30 Node / 25 browser tests.
 
 After capture, the next-steps page now includes the supplied Calendly schedule
 inline, with a new-tab fallback. Direct visits remain neutral; preview does not

@@ -1,15 +1,21 @@
 const { test, expect } = require('@playwright/test');
-for (const width of [320, 390, 768, 1440]) {
-  test(`editorial layout, readable controls and complete workflow visual at ${width}px`, async ({ page }) => {
+for (const width of [320, 390, 768, 1024, 1440]) {
+  test(`photographic layout, readable controls and layered workflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     let posts = 0; page.on('request', r => { if (r.method() === 'POST') posts++; });
     await page.goto('/'); await page.evaluate(() => document.fonts.ready);
-    await expect(page.locator('h1')).toHaveText('Less time chasing paperwork.More time running your business.');
+    await expect(page.locator('h1')).toHaveText('Less paperwork.More time forthe work.');
     await expect(page.locator('.card-stage,.float-card,.hero .eyebrow')).toHaveCount(0);
-    const image = page.locator('.hero-art img');
+    const image = page.locator('.hero-photo');
     await expect(image).toBeVisible();
     expect(await image.evaluate(el => el.complete && el.naturalWidth > 0 && el.width <= innerWidth)).toBe(true);
-    await expect(image).toHaveAttribute('width', '1200'); await expect(image).toHaveAttribute('height', '1200');
+    await expect(image).toHaveAttribute('width', '1600'); await expect(image).toHaveAttribute('height', '900');
+    const hero = await page.locator('.hero').boundingBox(), handoff = await page.locator('.hero-handoff').boundingBox();
+    expect(handoff.y).toBeLessThan(hero.y + hero.height);
+    await expect(page.locator('.step-number')).toHaveText(['01', '02', '03']);
+    await page.locator('.problem-photo img').scrollIntoViewIfNeeded();
+    await expect.poll(() => page.locator('.problem-photo img').evaluate(el => el.complete && el.naturalWidth > 0)).toBe(true);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     const smallText = await page.locator('main p,main label,main input,main select,main summary,.label-note').evaluateAll(elements => elements.filter(el => el.getClientRects().length && parseFloat(getComputedStyle(el).fontSize) < 16).map(el => el.textContent));
     expect(smallText).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

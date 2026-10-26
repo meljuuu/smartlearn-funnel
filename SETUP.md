@@ -1,5 +1,9 @@
 # SmartLearn setup and launch handoff
 
+The latest photographic redesign is documented in [PHOTO-DESIGN.md](PHOTO-DESIGN.md).
+It preserves the existing live capture and disabled-delivery settings. Its
+rollback deployment is recorded at the top of [CLOUDFLARE.md](CLOUDFLARE.md).
+
 The October 26 landing-page redesign needs no new account, variable, integration
 or dependency. Its 35-reference design log and asset details are in
 [DESIGN-RESEARCH.md](DESIGN-RESEARCH.md); verification and the prior deployment
