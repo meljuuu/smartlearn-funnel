@@ -1,5 +1,18 @@
 # SmartLearn photographic redesign
 
+## Motion update
+
+`assets/motion.js` progressively enhances the landing page with one-time section
+reveals using IntersectionObserver and the Web Animations API. Content is never
+hidden by default. Keyboard focus cancels a target's reveal; changing to reduced
+motion cancels running effects and disconnects the observer. CSS adds a brief hero
+entrance, button hover/press feedback, arrow movement and restrained image/icon
+hover effects. Hover movement requires a fine pointer. No looping or flashing
+effects, parallax, dependencies or integration changes were introduced.
+
+The browser suite now has 27 tests, including button states, one-time reveals,
+runtime reduced-motion changes and content visibility without JavaScript.
+
 This revision follows the user's written description of the website inside the
 second promotional reference: strong headlines, dark photography, layered section
 boundaries, light/dark contrast, clear actions and distinctive process steps.

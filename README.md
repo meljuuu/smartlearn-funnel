@@ -17,7 +17,8 @@ overlapping sections, yellow process numbers and a polished light form panel.
 [Current design notes](PHOTO-DESIGN.md) record the assets, prompts and checks;
 [earlier research](DESIGN-RESEARCH.md) preserves the 35-site reference log.
 No new dependencies or integration settings are required. Current design QA
-covers 30 Node / 25 browser tests.
+covers 30 Node / 27 browser tests. Buttons and sections now include restrained
+motion, with reduced-motion support and no dependency on animation for visibility.
 
 After capture, the next-steps page now includes the supplied Calendly schedule
 inline, with a new-tab fallback. Direct visits remain neutral; preview does not

@@ -2,6 +2,14 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
+Motion update: button feedback, a brief hero entrance and one-time scroll reveals
+are implemented in `assets/design.css` and `assets/motion.js`. Reduced motion and
+keyboard focus are respected; content remains visible without the script.
+The suite now has 27 browser tests. To undo only this motion update, restore
+Worker version `80b9b8d4-6afe-4482-b677-83c403ea5a2d` (photographic design,
+commit `fb841736343dea8a0a910a506f3e238c8b7a7487`), using Deployments → Rollback
+or `npx wrangler rollback 80b9b8d4-6afe-4482-b677-83c403ea5a2d`.
+
 ## Current photographic redesign (October 26)
 
 The latest visual update adds original workshop photography, a full-width dark
