@@ -6,7 +6,7 @@ if (!['preview', 'live'].includes(mode)) throw new Error('FUNNEL_MODE must be pr
 if (mode === 'live' && !require('../server/gateway.cjs').configured(process.env)) throw new Error('Live build requires enabled capture, signed Apps Script configuration, allowed origins and an approved HTTPS privacy policy');
 if (process.env.BOOKING_URL && !core.https(process.env.BOOKING_URL)) throw new Error('BOOKING_URL must be HTTPS or blank');
 fs.mkdirSync('public/assets', { recursive: true });
-for (const file of ['index.html', 'thank-you.html', 'privacy.html']) fs.copyFileSync(file, path.join('public', file));
+for (const file of ['index.html', 'thank-you.html', 'privacy.html', 'favicon.ico']) fs.copyFileSync(file, path.join('public', file));
 for (const file of fs.readdirSync('assets')) if (file !== 'config.js') fs.copyFileSync(path.join('assets', file), path.join('public/assets', file));
 const config = { previewMode: mode === 'preview', leadEndpoint: '/api/leads', bookingUrl: process.env.BOOKING_URL || '', privacyUrl: process.env.PRIVACY_POLICY_URL || '', bookingEmail: 'info@smartlearn.ca' };
 fs.writeFileSync('public/assets/config.js', `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`);
