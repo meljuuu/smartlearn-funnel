@@ -2,6 +2,44 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
+## October 27 — current review state (supersedes older records below)
+
+The updated deployment is deliberately **preview**, with `FUNNEL_MODE=preview`,
+`CAPTURE_ENABLED=false`, `EVENTS_ENABLED=false`. The form does not save/send and
+preview does not load Calendly. Existing Google/Cloudflare signing secrets are
+unchanged. The private Google endpoint was rechecked: schema/signing work, its
+capture flag is true and email/followups/events are false, but its deployed code
+is still the legacy form contract. The revised minimal form therefore must not
+be switched live until the prepared adapter is published and tested.
+
+Implemented: October 27 generic business/pain-point copy; people-free licensed
+desk imagery; optional business type/area/team size; a required free-text task;
+three safely allowlisted concept openings; concept in the existing Notes column;
+sales-first contact and prepared owner-notification CC; unchanged animations,
+favicon, inquiry-vs-booking truthfulness and durable deduplication architecture.
+
+See [OCT27-SETUP.md](OCT27-SETUP.md) for exact account screens, prepared files,
+secure verification commands, notification routing, external-test limits and
+reenabling steps. [CAMPAIGN-OCT27.md](CAMPAIGN-OCT27.md) contains copy-ready Google
+Doc replacements, three ad concepts and the proposed, inactive test/measurement plan.
+No campaign document, tracker structure/sharing, DNS, Vercel main, ads or spend changed.
+
+Checks: build; 36 Node/adapter tests; 31 Chrome browser checks, including layouts
+at 320/390/768/1024/1440px, optional fields, concept attribution, keyboard and
+reduced-motion behavior. External capture/delivery/event tests are mocked unless
+explicitly identified in OCT27-SETUP. The live Google health and public Calendly
+display were checked without creating a lead, sending mail or booking an event.
+
+Rollback of this revision: `npx wrangler rollback 31abc45d-a2cd-4d75-9016-26e1076bc919`.
+That restores the earlier full form and its **live** capture settings, not preview;
+see the detailed consequence in OCT27-SETUP. `X-SmartLearn-Build` on
+`/assets/config.js` identifies the currently deployed commit.
+
+## Historical deployment records
+
+The entries below describe earlier iterations; current mode/contact/form details
+above take precedence.
+
 Current stock-photo update: generated workshop scenes are replaced by locally
 hosted Pexels photographs; see [STOCK-PHOTOS.md](STOCK-PHOTOS.md). Design,
 animations and integration settings are retained. Build plus eight targeted

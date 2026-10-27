@@ -1,5 +1,16 @@
 # Current website stock photography
 
+**October 27 superseding selection:** all current hero/process/form photo
+references use a people-free desk scene by **Kaboompics**, Pexels photo
+[8092420](https://www.pexels.com/photo/a-lamp-and-a-notebook-on-a-desk-8092420/),
+under the [Pexels License](https://www.pexels.com/license/) rechecked October 27.
+Local assets: `assets/admin-desk-640.jpg`, `admin-desk-1000.jpg`,
+`admin-desk-1200.jpg` (2:3 aspect ratio; explicit 1200×1800 hero dimensions).
+No people or hands appear. The problem-section example is editable HTML with
+fictional company/job details, explicitly described as a workflow illustration.
+The person-and-hands photographs below are historical assets and are no longer
+referenced by the landing page. No photo is claimed to depict SmartLearn clients.
+
 Selected and downloaded October 26, 2026. These two photographs replace the
 generated workshop images everywhere they were used on the current landing page,
 including the process and form backgrounds. Prior generated assets remain in

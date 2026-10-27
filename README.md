@@ -1,8 +1,15 @@
 # SmartLearn discovery funnel
 
-Discovery funnel for Surrey and Langley home-service businesses. The Cloudflare
-website now captures inquiries. Local development defaults to preview. Automatic
-email, follow-ups and provider event ingestion remain disabled.
+Discovery funnel for businesses in Surrey and Langley. The October 27 review
+uses the new pain-point copy, people-free stock imagery and a shorter form.
+Cloudflare and local development currently run in **preview**, pending publication
+and acceptance of the revised Google adapter. Automatic email, follow-ups and
+provider events remain disabled. See [current setup](OCT27-SETUP.md) and
+[campaign copy/testing plan](CAMPAIGN-OCT27.md). Existing signing and tracker
+connections are intact; they do not prove the new adapter has been deployed.
+
+The following October 26 deployment notes describe the previous live iteration.
+Current October 27 preview/setup instructions take precedence.
 
 October 26 update: the user authorized enabling website capture and publishing a
 site-specific privacy policy. Cloudflare's checked-in runtime now uses live capture,

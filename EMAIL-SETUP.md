@@ -1,5 +1,24 @@
 # Authorize SmartLearn email
 
+## October 27 update — current instructions
+
+Use [OCT27-SETUP.md, sections 3–4](OCT27-SETUP.md) for the new sales-first flow.
+`OWNER_NOTIFICATION_EMAILS=sales@smartlearn.ca` and the new
+`OWNER_NOTIFICATION_CC=info@smartlearn.ca` prepare inquiry notifications; this
+does not change the host, calendar owner or From identity. Publish/update the
+prepared Mail file before using the new property. Test mail strips all owner CC
+and targets only the already authorized `polarisjumel@gmail.com` inbox.
+`EMAIL_ENABLED`, `FOLLOWUPS_ENABLED` and `EVENTS_ENABLED` must remain false.
+The earlier two-message test is historical evidence, not proof that the October
+27 templates/CC or Calendly routing are installed or live. The new one-time test
+key permits one revised pair after account authorization, with safe replay holds.
+
+The public inquiry/scheduling fallback is now sales@smartlearn.ca. The consistently
+spelled info@smartlearn.ca is the requested visibility/copy destination; never use
+the typo in the supplied message. The existing verified booking URL is retained.
+
+## Earlier authorization reference
+
 Calendar update: the website now uses
 `https://calendly.com/smartlearn-sales/30min`. In the existing Apps Script project,
 update the private `BOOKING_URL` property to this same value before future email

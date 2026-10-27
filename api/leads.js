@@ -19,7 +19,10 @@ function createHandler(env = process.env, fetcher = fetch) {
     const ip = req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
     const clientKey = createHmac('sha256', env.APPS_SCRIPT_SECRET).update(String(ip)).digest('hex');
     try {
-      const result = await gateway.bridge(action, { lead: checked.value, clientKey }, env, fetcher);
+      // The legacy adapter rejects this action before any append. Accidental
+      // live configuration cannot silently save an incomplete v2 inquiry there.
+      const result = await gateway.bridge(action === 'capture' ? 'capture_v2' : action, { lead: checked.value, clientKey }, env, fetcher);
+      if (action === 'capture' && !result.ok && result.code === 'validation') return gateway.json(res, 503, { ok: false, code: 'adapter_update_required' });
       if (!result.ok) return gateway.json(res, result.code === 'rate_limited' ? 429 : result.code === 'conflict' ? 409 : 503, { ok: false, code: result.code || 'unavailable' });
       if (action === 'status' && result.state === 'not_found') return gateway.json(res, 200, { ok: true, state: 'not_found' });
       if (!core.uuid.test(result.leadId || '')) throw new Error('unconfirmed');

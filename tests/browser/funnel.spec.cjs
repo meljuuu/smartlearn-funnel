@@ -7,10 +7,11 @@ async function configure(page, cfg = live) {
 }
 async function business(page) {
   await page.locator('#business').fill('Test Plumbing');
+  await page.locator('.optional-routing').evaluate(el => el.open = true);
   await page.locator('#industry').selectOption('Plumbing');
   await page.locator('#area').selectOption('Other');
   await page.locator('#team').fill('1');
-  await page.locator('#challenge').selectOption('Paperwork and repeated data entry');
+  await page.locator('#challenge').fill('Paperwork and repeated data entry');
 }
 async function contact(page) {
   await page.locator('#name').fill('Test Person');
@@ -121,7 +122,7 @@ test('valid capture has one POST under double click, no personal URL/storage and
   await expect(page.locator('#request-status')).toContainText('INQUIRY RECEIVED');
   expect(requests.filter(r => !r.action)).toHaveLength(1);
   expect(requests.filter(r => r.action === 'status')).toHaveLength(1);
-  expect(requests[0].attribution).toEqual({ utm_source: 'facebook', ad_id: '123' });
+  expect(requests[0].attribution).toEqual({ utm_source: 'facebook', ad_id: '123', concept: 'evening-paperwork' });
   expect(page.url()).not.toContain('test');
   const stored = await page.evaluate(() => JSON.stringify({ ...sessionStorage, ...localStorage }));
   expect(stored).not.toContain('Test Person'); expect(stored).not.toContain('test@example');

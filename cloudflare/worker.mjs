@@ -64,7 +64,7 @@ export default {
           leadEndpoint: live || preview ? '/api/leads' : '',
           bookingUrl: core.https(env.BOOKING_URL) ? env.BOOKING_URL : '',
           privacyUrl: core.https(env.PRIVACY_POLICY_URL) ? env.PRIVACY_POLICY_URL : '',
-          bookingEmail: 'info@smartlearn.ca'
+          bookingEmail: 'sales@smartlearn.ca'
         };
         return secure(new Response(request.method === 'HEAD' ? null : `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config)});\n`, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', 'X-SmartLearn-Build': /^[a-f0-9]{40}$/.test(env.BUILD_COMMIT || '') ? env.BUILD_COMMIT : 'unversioned' } }));
       }

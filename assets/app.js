@@ -13,7 +13,7 @@
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   document.querySelectorAll('[data-preview]').forEach(el => {
     el.hidden = live;
-    if (!preview && !live) el.textContent = 'Requests are unavailable: live configuration is incomplete. Please contact info@smartlearn.ca.';
+    if (!preview && !live) el.textContent = 'Requests are unavailable: live configuration is incomplete. Please contact sales@smartlearn.ca.';
   });
   async function request(data) {
     const response = await fetch(cfg.leadEndpoint, {
@@ -30,7 +30,7 @@
     const steps = [...form.querySelectorAll('[data-step]')], errors = form.querySelector('#form-errors');
     const button = document.querySelector('#submit-button'), next = document.querySelector('#next-step');
     const check = document.querySelector('#check-status'), retry = document.querySelector('#retry-request');
-    const fields = [...form.querySelectorAll('input, select')];
+    const fields = [...form.querySelectorAll('input, select, textarea')];
     let step = 1, busy = false, frozen = null;
     let pending = storage.get(pendingKey);
     if (!uuid.test(pending?.request_id || '')) pending = null;
@@ -43,11 +43,11 @@
       document.querySelector('#form-title').textContent = n === 1 ? 'Your business' : 'Your contact details';
       document.querySelector('#progress').style.width = `${n * 50}%`;
       errors.hidden = true;
-      steps[n - 1].querySelector('input,select')?.focus();
+      steps[n - 1].querySelector('input,select,textarea')?.focus();
     };
     const validate = current => {
       const invalid = [];
-      current.querySelectorAll('input,select').forEach(el => {
+      current.querySelectorAll('input,select,textarea').forEach(el => {
         const bad = (el.required && el.type !== 'checkbox' && !el.value.trim()) || !el.checkValidity();
         el.setAttribute('aria-invalid', String(bad));
         if (bad) invalid.push(el);
@@ -56,6 +56,7 @@
       const label = invalid[0].labels?.[0]?.textContent.trim() || 'the highlighted field';
       error(`Please check ${label}. Complete required fields, enter a valid email and acknowledge contact about this inquiry.`);
       invalid[0].setAttribute('aria-describedby', 'form-errors');
+      const disclosure = invalid[0].closest('details'); if (disclosure) disclosure.open = true;
       invalid[0].focus();
       return false;
     };
@@ -65,7 +66,7 @@
       const previous = storage.get(receiptKey);
       const alreadyEmitted = previous?.request_id === pending.request_id && previous.eventEmitted === true;
       if (!storage.set(receiptKey, { request_id: pending.request_id, at: Date.now(), eventEmitted: true })) {
-        error('Your inquiry was received. A call time is not yet confirmed. Contact info@smartlearn.ca to arrange it.');
+        error('Your inquiry was received. A call time is not yet confirmed. Contact sales@smartlearn.ca to arrange it.');
         return;
       }
       if (!alreadyEmitted) window.dispatchEvent(new CustomEvent('smartlearn:captured', { detail: { eventId: body.leadId } }));
@@ -88,7 +89,7 @@
           check.hidden = true;
         }
       } catch {
-        error('We still cannot confirm this request. Check its status again, or contact info@smartlearn.ca before starting another inquiry.');
+        error('We still cannot confirm this request. Check its status again, or contact sales@smartlearn.ca before starting another inquiry.');
       } finally { busy = false; check.disabled = false; }
     }
     async function send() {
@@ -101,12 +102,12 @@
           const field = fields.find(el => failure.fields?.[el.name]);
           if (field) show(steps[0].contains(field) ? 1 : 2);
           error('The server rejected these details. Correct the highlighted field before trying again; the same request ID will be retained.');
-          if (field) { field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', 'form-errors'); field.focus(); }
+          if (field) { const disclosure = field.closest('details'); if (disclosure) disclosure.open = true; field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', 'form-errors'); field.focus(); }
         } else {
-          error(failure.status === 409 ? 'This request ID already belongs to an inquiry with different details. Check its status and contact info@smartlearn.ca to correct the original inquiry.' : 'We could not confirm receipt. Your request may still be processing. Check its status before retrying; your details remain on this page.');
+          error(failure.message === 'adapter_update_required' ? 'Live capture is unavailable because its adapter needs an update. No new inquiry was saved by this attempt. Check status before retrying, or contact sales@smartlearn.ca.' : failure.status === 409 ? 'This request ID already belongs to an inquiry with different details. Check its status and contact sales@smartlearn.ca to correct the original inquiry.' : 'We could not confirm receipt. Your request may still be processing. Check its status before retrying; your details remain on this page.');
           check.hidden = false;
         }
-      } finally { busy = false; button.textContent = 'Request my free discovery call ↗'; }
+      } finally { busy = false; button.textContent = 'Request My Free Discovery Call ↗'; }
     }
     next.addEventListener('click', () => { if (!busy && validate(steps[0])) show(2); });
     document.querySelector('#previous-step').addEventListener('click', () => { if (!busy) show(1); });
@@ -118,7 +119,7 @@
       if (busy || (pending && !pending.reconciled)) return;
       if (step === 1) { if (validate(steps[0])) show(2); return; }
       if (!validate(steps[1])) return;
-      if (!preview && !live) { error('Live requests are unavailable until capture and the approved privacy policy are configured. Contact info@smartlearn.ca.'); return; }
+      if (!preview && !live) { error('Live requests are unavailable until capture and the approved privacy policy are configured. Contact sales@smartlearn.ca.'); return; }
       if (form.elements.website_url.value) { error('Unable to accept this request.'); return; }
       if (preview) {
         storage.set(receiptKey, { preview: true, at: Date.now() });
@@ -128,13 +129,14 @@
       for (const field of fields) if (field.name) data[field.name] = field.type === 'checkbox' ? field.checked : field.value.trim();
       pending ||= { request_id: crypto.randomUUID(), at: Date.now() };
       delete pending.reconciled;
-      if (!storage.set(pendingKey, pending)) { error('Please enable session storage to safely track this request, or contact info@smartlearn.ca. Nothing has been sent.'); pending = null; return; }
+      if (!storage.set(pendingKey, pending)) { error('Please enable session storage to safely track this request, or contact sales@smartlearn.ca. Nothing has been sent.'); pending = null; return; }
       data.request_id = pending.request_id;
       const query = new URLSearchParams(location.search);
       data.attribution = {};
       for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ad_id', 'adset_id', 'campaign_id']) {
         if (query.has(key)) data.attribution[key] = query.get(key).slice(0, 200);
       }
+      data.attribution.concept = window.SMARTLEARN_CAMPAIGN?.concept || 'evening-paperwork';
       frozen = data;
       await send();
     });
@@ -144,7 +146,7 @@
     if (https(cfg.privacyUrl)) { privacy.href = cfg.privacyUrl; privacy.target = '_blank'; privacy.rel = 'noopener'; privacy.textContent = 'Privacy policy'; }
     else privacy.addEventListener('click', e => { e.preventDefault(); dialog.showModal(); });
     document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
-    if (!preview && !live) { button.disabled = true; error('Live submission is disabled because configuration is incomplete. Contact info@smartlearn.ca.'); }
+    if (!preview && !live) { button.disabled = true; error('Live submission is disabled because configuration is incomplete. Contact sales@smartlearn.ca.'); }
     if (pending && live) { lock(true); check.hidden = false; error('A previous request needs a status check before another submission. No contact details are stored in your browser.'); }
     window.addEventListener('pageshow', event => {
       if (!event.persisted || busy) return;
@@ -189,7 +191,7 @@
         title.textContent = 'Thanks for your inquiry.';
         description.textContent = embeddedBooking ? 'Your inquiry was received. Choose a time below to book your discovery call.' : 'Your inquiry was received. Choose a time if booking is available, or email the team to arrange your discovery call.';
         status.textContent = embeddedBooking ? 'INQUIRY RECEIVED' : 'INQUIRY RECEIVED · CALL TIME NOT YET CONFIRMED';
-      }).catch(() => { description.textContent = 'We cannot verify receipt right now. Contact info@smartlearn.ca before submitting another inquiry. No appointment is confirmed.'; });
+      }).catch(() => { description.textContent = 'We cannot verify receipt right now. Contact sales@smartlearn.ca before submitting another inquiry. No appointment is confirmed.'; });
     }
   }
 })();

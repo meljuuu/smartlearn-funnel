@@ -6,7 +6,8 @@ var SmartLearnCore = (() => {
     service_area: ['Surrey', 'Langley', 'Surrey and Langley', 'Other'],
     main_challenge: ['Customer inquiries and follow-ups', 'Scheduling and coordination', 'Quotes and invoicing', 'Paperwork and repeated data entry', 'Other administrative work']
   };
-  const attributionKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ad_id', 'adset_id', 'campaign_id'];
+  const concepts = ['evening-paperwork', 'repeated-entry', 'customer-updates'];
+  const attributionKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ad_id', 'adset_id', 'campaign_id', 'concept'];
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const email = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
   function https(value) {
@@ -27,8 +28,15 @@ var SmartLearnCore = (() => {
     for (const key of ['business_type', 'service_area', 'team_size', 'main_challenge']) {
       if (key === 'team_size') {
         // Match the tracker's DOUBLE column without inventing a size qualification rule.
-        if (typeof input.team_size !== 'string' || !/^[1-9]\d{0,5}$/.test(input.team_size)) errors.team_size = 'Enter the number of people, including you (a whole number).';
+        if (input.team_size === undefined || input.team_size === '') value.team_size = '';
+        else if (typeof input.team_size !== 'string' || !/^[1-9]\d{0,5}$/.test(input.team_size)) errors.team_size = 'Enter the number of people, including you (a whole number), or leave it blank.';
         else value.team_size = input.team_size;
+      } else if (key === 'main_challenge') {
+        const task = typeof input[key] === 'string' ? input[key].trim() : '';
+        if (!task || task.length > 1000 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(task)) errors[key] = 'Describe one task (maximum 1000 characters).';
+        value[key] = task;
+      } else if (input[key] === undefined || input[key] === '') {
+        value[key] = '';
       } else if (!choices[key].includes(input[key])) errors[key] = 'Choose one of the available options.';
       else value[key] = input[key];
     }
@@ -38,6 +46,7 @@ var SmartLearnCore = (() => {
     value.attribution = {};
     if (input.attribution && typeof input.attribution === 'object') {
       for (const key of attributionKeys) {
+        if (key === 'concept' && !concepts.includes(input.attribution[key])) continue;
         if (typeof input.attribution[key] === 'string') value.attribution[key] = input.attribution[key].replace(/[\x00-\x1f\x7f]/g, '').slice(0, 200);
       }
     }
@@ -49,7 +58,7 @@ var SmartLearnCore = (() => {
   function message(kind, lead, cfg, event) {
     const name = firstName(lead.full_name), business = lead.business_name;
     const booking = https(cfg.bookingUrl) ? `Choose a time here: ${cfg.bookingUrl}, or reply and we’ll help arrange one.` : 'Reply and we’ll help arrange a time.';
-    if (kind === 'ack') return { subject: 'Your SmartLearn discovery-call inquiry', body: `Hi ${name}, thanks for your interest in SmartLearn. Our free AI & Digitization Discovery Call is a chance to discuss the work you would like to simplify. ${booking} — The SmartLearn team` };
+    if (kind === 'ack') return { subject: 'Your SmartLearn discovery-call inquiry', body: `Hi ${name}, thanks for your interest in SmartLearn. Our free AI & Digitization Discovery Call with the Digitization Team is a chance to discuss one repetitive administrative task, the tools you use today and whether automation could help. ${booking} Assessments and implementation are scoped separately. — The SmartLearn team` };
     if (kind.startsWith('followup:')) {
       if (!https(cfg.bookingUrl)) throw new Error('Booking URL required for booking prompts');
       return { subject: 'Your SmartLearn inquiry', body: `Hi ${name}, just following up on your SmartLearn inquiry. If you would still like to explore a clearer workflow for ${business}, choose a time here: ${cfg.bookingUrl}. You can also reply if you need help. — The SmartLearn team` };
@@ -97,6 +106,6 @@ var SmartLearnCore = (() => {
     if (value.leadId) value.leadId = value.leadId.toLowerCase();
     return { value, errors };
   }
-  return { choices, attributionKeys, uuid, email, https, validateLead, validateEvent, cell, message, businessDaysElapsed, promptsAllowed };
+  return { choices, concepts, attributionKeys, uuid, email, https, validateLead, validateEvent, cell, message, businessDaysElapsed, promptsAllowed };
 })();
 if (typeof module !== 'undefined') module.exports = SmartLearnCore;

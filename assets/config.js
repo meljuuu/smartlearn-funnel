@@ -3,5 +3,5 @@ window.SMARTLEARN_CONFIG = Object.freeze({
   leadEndpoint: '/api/leads',
   bookingUrl: '',
   privacyUrl: '',
-  bookingEmail: 'info@smartlearn.ca'
+  bookingEmail: 'sales@smartlearn.ca'
 });

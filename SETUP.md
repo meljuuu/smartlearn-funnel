@@ -1,5 +1,38 @@
 # SmartLearn setup and launch handoff
 
+## October 27 — start here
+
+The current page uses generic business wording for Surrey/Langley and the
+jobs-finished/paperwork opening. Routing fields/team size are optional; the task
+is free text. The new validator and mail CC adapter are prepared, but the **existing
+Google Web app must be updated through its owner’s deployment screen**. A live
+signed check confirmed it still runs the legacy contract. Cloudflare review is
+therefore deliberately preview (`FUNNEL_MODE=preview`, `CAPTURE_ENABLED=false`),
+and recipient email/followups/events remain off. Do not follow an older live-mode
+instruction below before completing the October 27 adapter verification.
+
+Follow [OCT27-SETUP.md](OCT27-SETUP.md), in order: publish the prepared Code/Mail
+files, verify the deployed contract and one minimal synthetic row, prepare sales
+To/info CC, inspect and verify event-specific Calendly notification routing, then
+re-enable website capture only after the required checks/handling decisions.
+No new signing secret, tracker, paid service or CRM is needed.
+
+[CAMPAIGN-OCT27.md](CAMPAIGN-OCT27.md) contains the exact campaign-document
+replacement text, three ad/visual directions and inactive A/B/measurement plan.
+The canonical document remains unchanged. Qualification, owner/backup/response
+window, human calendar host/settings, sender/reply handling, privacy review,
+route/tracking, follow-up timing, budget and launch still need final confirmation.
+
+36 mocked Node checks and 31 browser checks pass. Actual Google schema/signing
+and public calendar display were read; no October 27 live capture/email/appointment
+chain is claimed. Original tracker records, formula handling, eight historical
+category values, privacy link, logo and favicon are preserved.
+
+## Historical setup notes
+
+Earlier live/people-photo/fully-required-form descriptions below are retained as
+history. The October 27 state and OCT27-SETUP instructions supersede them.
+
 The latest photographic redesign is documented in [PHOTO-DESIGN.md](PHOTO-DESIGN.md).
 It preserves the existing live capture and disabled-delivery settings. Its
 rollback deployment is recorded at the top of [CLOUDFLARE.md](CLOUDFLARE.md).

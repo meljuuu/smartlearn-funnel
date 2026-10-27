@@ -123,7 +123,7 @@ function slHandle(data) {
   if (data.action === 'health') return slHealth(book);
   if (data.action === 'end_test') { slProperties().setProperty('TEST_CAPTURE_ENABLED', 'false'); return { ok: true }; }
   if (data.action === 'event') return slEvent(book, sheet, headers, data.event);
-  if (!['capture', 'test_capture', 'status'].includes(data.action) || !data.lead || typeof data.lead.request_id !== 'string' || !SmartLearnCore.uuid.test(data.lead.request_id)) return { ok: false, code: 'validation' };
+  if (!['capture', 'capture_v2', 'test_capture', 'status'].includes(data.action) || !data.lead || typeof data.lead.request_id !== 'string' || !SmartLearnCore.uuid.test(data.lead.request_id)) return { ok: false, code: 'validation' };
   var row = slFind(sheet, headers.indexOf('Website request ID') + 1, data.lead.request_id.toLowerCase());
   if (data.action === 'status') {
     if (!slRate(String(data.clientKey || ''), 'status')) return { ok: false, code: 'rate_limited' };
@@ -145,9 +145,9 @@ function slHandle(data) {
   var values = {
     'Date received': new Date(now), 'Source': testing ? 'Integration test (synthetic)' : 'Website funnel', 'Meta lead ID': '', 'Name': lead.full_name,
     'Business name': lead.business_name, 'Email': lead.email, 'Phone': lead.phone, 'Business type': lead.business_type,
-    'City/service area': lead.service_area, 'Team size': Number(lead.team_size), 'Main administrative challenge': lead.main_challenge,
+    'City/service area': lead.service_area, 'Team size': lead.team_size === '' ? '' : Number(lead.team_size), 'Main administrative challenge': lead.main_challenge,
     'Assigned person': testing ? '' : slProperties().getProperty('LEAD_OWNER') || '', 'Status': 'New',
-    'Notes': testing ? 'Synthetic integration verification only. No email, follow-up or booking. Preserve this row as test evidence.' : '',
+    'Notes': (testing ? 'Synthetic integration verification only. No email, follow-up or booking. Preserve this row as test evidence.' : '') + (a.concept ? (testing ? '\n' : '') + 'Website concept: ' + a.concept : ''),
     'Website request ID': lead.request_id, 'Website lead ID': leadId, 'Website payload hash': hash,
     'Contact acknowledgment at': now, 'UTM source': a.utm_source || '', 'UTM medium': a.utm_medium || '',
     'UTM campaign': a.utm_campaign || '', 'UTM content': a.utm_content || '', 'UTM term': a.utm_term || '',
@@ -197,7 +197,7 @@ function slHealth(book) {
   if (delivery.getLastRow() > 1) delivery.getRange(2, 2, delivery.getLastRow() - 1, 1).getValues().forEach(function(row) {
     var state = String(row[0]); if (['sent', 'sending', 'uncertain', 'blocked_configuration'].includes(state)) counts[state] = (counts[state] || 0) + 1;
   });
-  return { ok: true, schema: 'ready', captureEnabled: p.getProperty('CAPTURE_ENABLED') === 'true', testCaptureEnabled: p.getProperty('TEST_CAPTURE_ENABLED') === 'true', eventsEnabled: p.getProperty('EVENTS_ENABLED') === 'true', emailEnabled: p.getProperty('EMAIL_ENABLED') === 'true', followupsEnabled: p.getProperty('FOLLOWUPS_ENABLED') === 'true', delivery: counts };
+  return { ok: true, schema: 'ready', leadContract: 'generic-2026-10-27', captureEnabled: p.getProperty('CAPTURE_ENABLED') === 'true', testCaptureEnabled: p.getProperty('TEST_CAPTURE_ENABLED') === 'true', eventsEnabled: p.getProperty('EVENTS_ENABLED') === 'true', emailEnabled: p.getProperty('EMAIL_ENABLED') === 'true', followupsEnabled: p.getProperty('FOLLOWUPS_ENABLED') === 'true', delivery: counts };
 }
 function inspectSmartLearnSetup() {
   var result;
@@ -234,7 +234,7 @@ function recordSmartLearnStop() { slPromptContact('stopped'); }
 function slMailConfig() {
   var p = slProperties();
   return { enabled: p.getProperty('EMAIL_ENABLED') === 'true', from: p.getProperty('SENDER_EMAIL') || '', replyTo: p.getProperty('REPLY_TO_EMAIL') || '',
-    owners: p.getProperty('OWNER_NOTIFICATION_EMAILS') || '', bookingUrl: p.getProperty('BOOKING_URL') || '',
+    owners: p.getProperty('OWNER_NOTIFICATION_EMAILS') || '', ownerCc: p.getProperty('OWNER_NOTIFICATION_CC') || '', bookingUrl: p.getProperty('BOOKING_URL') || '',
     trackerUrl: 'https://docs.google.com/spreadsheets/d/' + p.getProperty('SPREADSHEET_ID') + '/edit',
     followups: p.getProperty('FOLLOWUPS_ENABLED') === 'true', days: p.getProperty('FOLLOWUP_BUSINESS_DAYS') || '', timeZone: p.getProperty('FOLLOWUP_TIME_ZONE') || '',
     confirmationSystem: p.getProperty('BOOKING_CONFIRMATION_SYSTEM') || 'calendar' };
@@ -252,6 +252,10 @@ function verifySmartLearnSender() {
 function slVerifySender(cfg) {
   var effective = Session.getEffectiveUser().getEmail().toLowerCase();
   if (!SmartLearnCore.email.test(cfg.from) || !SmartLearnCore.email.test(cfg.replyTo) || !cfg.owners || cfg.owners.split(',').some(function(x) { return !SmartLearnCore.email.test(x.trim()); })) throw new Error('Set authorized sender, reply routing and owner/backup recipients first');
+  var cc = cfg.ownerCc ? cfg.ownerCc.split(',').map(function(x) { return x.trim().toLowerCase(); }) : [];
+  if (cc.some(function(x) { return !SmartLearnCore.email.test(x); })) throw new Error('Check owner notification copy recipients');
+  var primary = cfg.owners.split(',').map(function(x) { return x.trim().toLowerCase(); });
+  cfg.ownerCc = cc.filter(function(x, i) { return primary.indexOf(x) < 0 && cc.indexOf(x) === i; }).join(',');
   if (cfg.from.toLowerCase() !== effective && !GmailApp.getAliases().map(function(x) { return x.toLowerCase(); }).includes(cfg.from.toLowerCase())) throw new Error('Sender is neither the executing mailbox nor an authorized Gmail send-as alias');
   return cfg; // No messages sent by this verification function.
 }
@@ -260,14 +264,14 @@ function sendSmartLearnTestMessages() {
   var p = slProperties(), recipient = (p.getProperty('TEST_EMAIL') || '').trim().toLowerCase();
   if (p.getProperty('TEST_EMAIL_ENABLED') !== 'true' || !SmartLearnCore.email.test(recipient)) throw new Error('Set an explicitly authorized TEST_EMAIL and enable the one-time TEST_EMAIL_ENABLED gate');
   if (p.getProperty('EMAIL_ENABLED') === 'true' || p.getProperty('FOLLOWUPS_ENABLED') === 'true') throw new Error('Keep production email and followups off during this test');
-  var cfg = slMailConfig(); cfg.owners = recipient; cfg = slVerifySender(cfg);
+  var cfg = slMailConfig(); cfg.owners = recipient; cfg.ownerCc = ''; cfg = slVerifySender(cfg);
   var lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     p.setProperty('TEST_EMAIL_ENABLED', 'false');
     var delivery = slTable(slBook(), SL_DELIVERY), sent = 0, held = 0;
     var lead = { full_name: 'Synthetic Test', business_name: 'SYNTHETIC AUTHORIZATION TEST', email: recipient, leadId: 'synthetic-email-test' };
     ['ack', 'owner'].forEach(function(kind) {
-      var key = 'mail-test:' + slHash(cfg.from.toLowerCase() + ':' + cfg.replyTo.toLowerCase() + ':' + recipient) + ':' + kind;
+      var key = 'mail-test:generic-2026-10-27:' + slHash(cfg.from.toLowerCase() + ':' + cfg.replyTo.toLowerCase() + ':' + recipient) + ':' + kind;
       if (slFind(delivery, 1, key)) { held++; return; }
       var mail = SmartLearnCore.message(kind, lead, cfg), row = slAppend(delivery, [key, 'sending', new Date().toISOString()]);
       SpreadsheetApp.flush();
@@ -347,6 +351,7 @@ function processSmartLearnNotifications() {
         try {
           var options = { name: 'SmartLearn', replyTo: cfg.replyTo };
           if (cfg.from.toLowerCase() !== Session.getEffectiveUser().getEmail().toLowerCase()) options.from = cfg.from;
+          if (kind === 'owner' && cfg.ownerCc) options.cc = cfg.ownerCc;
           GmailApp.sendEmail(kind === 'owner' ? cfg.owners : lead.email, mail.subject, mail.body, options);
           delivery.getRange(deliveryRow, 2, 1, 2).setValues([['sent', new Date().toISOString()]]);
           if (kind !== 'owner') { state.lastContactDay = today; slWriteState(states, lead.leadId, state); }

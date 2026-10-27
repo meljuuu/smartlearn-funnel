@@ -1,3 +1,39 @@
+# October 27 current acceptance record
+
+Supersedes earlier launch/readiness descriptions below. Build, **36 Node tests**
+and **31 browser checks** pass for the new generic minimal form, free-text task,
+optional routing/headcount, safe concept copy/attribution, sales-first prepared
+CC and retained keyboard/retry/motion behavior. Layout screenshots were reviewed
+at 320/390/768/1024/1440px. One early new assertion incorrectly expected the
+literal spreadsheet escape prefix in returned cell values; it was corrected to
+inspect the actual write, since Sheets consumes that prefix. The production
+formula-protection behavior was preserved.
+
+Live reads: sales Workspace campaign Doc, tracker metadata and exact A1:AD1 header;
+bounded format-only cells; signed installed Google health; public Calendly display;
+sales-addressed Calendly welcome message. No Sheet rows/schema/sharing were changed.
+Installed Google reported schema ready, legacy contract, capture true, synthetic
+gate false, email/followups/events false and two historical sent test records.
+The strict new contract verifier intentionally refuses that deployment before
+attempting a synthetic capture. The public calendar is reachable and displays a
+30-minute Free AI & Digitization Discovery Call / Polaris Jumel. Authenticated
+host identity, connected calendar, availability, plan and notification rules remain
+unverified. Welcome mail mentions a trial, not confirmed long-term feature access.
+
+The current review deployment deliberately uses preview, not live capture.
+Google code publication, actual minimal-row acceptance, revised-template delivery,
+sales/info notification visibility, real booking/reschedule/cancellation and
+reply/stop end-to-end acceptance remain blocked by the account steps in
+[OCT27-SETUP.md](OCT27-SETUP.md). Node/Chrome adapters and event tests are mocked;
+they are not proof of those live integrations. No prospect messages, ads, spend,
+real appointments or new live inquiries were created in this revision.
+
+The original logo bytes, favicon and all historical tracker category choices are
+preserved. The canonical Google campaign document was not edited; exact proposed
+replacement copy and test/measurement plan are in [CAMPAIGN-OCT27.md](CAMPAIGN-OCT27.md).
+
+---
+
 # SmartLearn verification — October 26, 2026
 
 ## Calendly inline embed update
