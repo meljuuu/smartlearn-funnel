@@ -1,0 +1,18 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const core = require('../shared/core.cjs');
+const mode = process.env.FUNNEL_MODE || 'preview';
+if (!['preview', 'live'].includes(mode)) throw new Error('FUNNEL_MODE must be preview or live');
+if (mode === 'live' && !require('../server/gateway.cjs').configured(process.env)) throw new Error('Live build requires enabled capture, signed Apps Script configuration, allowed origins and an approved HTTPS privacy policy');
+if (process.env.BOOKING_URL && !core.https(process.env.BOOKING_URL)) throw new Error('BOOKING_URL must be HTTPS or blank');
+fs.mkdirSync('public/assets', { recursive: true });
+for (const file of ['index.html', 'thank-you.html', 'privacy.html', 'favicon.ico']) fs.copyFileSync(file, path.join('public', file));
+for (const file of fs.readdirSync('assets')) if (file !== 'config.js') fs.copyFileSync(path.join('assets', file), path.join('public/assets', file));
+const config = { previewMode: mode === 'preview', leadEndpoint: '/api/leads', bookingUrl: process.env.BOOKING_URL || '', privacyUrl: process.env.PRIVACY_POLICY_URL || '', bookingEmail: 'sales@smartlearn.ca' };
+fs.writeFileSync('public/assets/config.js', `window.SMARTLEARN_CONFIG = Object.freeze(${JSON.stringify(config, null, 2)});\n`);
+fs.mkdirSync('.review', { recursive: true });
+fs.writeFileSync('.review/SmartLearn.gs', fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + fs.readFileSync('apps-script/SmartLearn.gs', 'utf8'));
+const capture = fs.readFileSync('apps-script/SmartLearn.gs', 'utf8').split('function slMailConfig()')[0];
+fs.writeFileSync('.review/SmartLearn-Capture.gs', fs.readFileSync('shared/core.cjs', 'utf8') + '\n' + capture);
+fs.writeFileSync('.review/SmartLearn-Mail.gs', 'function slMailConfig()' + fs.readFileSync('apps-script/SmartLearn.gs', 'utf8').split('function slMailConfig()')[1]);
+console.log(`Built ${mode} site in public/; capture-only install: .review/SmartLearn-Capture.gs; optional mail bundle: .review/SmartLearn.gs`);

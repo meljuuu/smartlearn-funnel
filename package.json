@@ -1,0 +1,24 @@
+{
+  "name": "smartlearn-funnel",
+  "version": "1.1.0",
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "start": "node scripts/dev.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "playwright test",
+    "deploy:cloudflare": "node scripts/deploy-cloudflare.cjs",
+    "dev:cloudflare": "wrangler dev",
+    "verify:google": "node scripts/verify-google.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "undici": "^7.30.1"
+  }
+}
