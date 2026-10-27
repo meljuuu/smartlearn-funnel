@@ -1,4 +1,38 @@
-# October 27 current acceptance record
+# October 27 — live form activation verified
+
+The user published the prepared Google update. Deployed signed health now reports
+`generic-2026-10-27`, capture true, synthetic gate false, and email/followups/events
+false. Historical sent-test count remains two; no new messages were sent.
+
+One persisted synthetic request ID was used for **three real concurrent signed
+capture_v2 attempts**, a replay and the real public website flow. Independent
+search of Website request ID in `Leads & Discovery Calls!S1:T1000` found exactly
+one matching row (row 7), including after the public test. Optional type, area and
+headcount were verified blank; the free-text task was preserved.
+
+Only that test row's B7 Source and R7 Notes were marked as integration-test data,
+retaining the concept marker and all formatting/IDs. This excludes it from future
+prospect notifications and campaign reporting. No historical record, column,
+formula, validation, permission or signing key was changed.
+
+The deployed browser test made one real capture POST under a double-click. Its
+successful backend response was deliberately discarded to simulate a lost
+response; the form froze input, reconciled through two real status checks and
+displayed **INQUIRY RECEIVED** only after verification. One capture event fired.
+Receipt storage/URL contained no contact data. The supplied Calendly schedule
+loaded inline, with an external fallback. No appointment was created and no
+booking/reschedule/cancellation sync is claimed. Evidence is retained in ignored
+`.review/oct27/activation-test.json`, `live-form-e2e-result.json` and
+`live-capture-handoff.png` (synthetic data and opaque IDs only).
+
+Cloudflare now uses `FUNNEL_MODE=live`, `CAPTURE_ENABLED=true` and events false.
+Local development stays preview. The 36 backend checks passed again; earlier
+31 browser checks remain valid for the unchanged application code. The old
+pre-publication hold below is superseded by this live acceptance.
+
+---
+
+# October 27 prior acceptance record — before Google publication
 
 Supersedes earlier launch/readiness descriptions below. Build, **36 Node tests**
 and **31 browser checks** pass for the new generic minimal form, free-text task,

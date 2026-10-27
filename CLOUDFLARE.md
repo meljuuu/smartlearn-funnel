@@ -23,6 +23,13 @@ Rollback to the immediately preceding minimal-form preview deployment:
 `npx wrangler rollback e01f67b5-34ed-4f4c-8a05-49addf8fa08c`.
 This disables public capture again without changing Google secrets or records.
 
+Public end-to-end acceptance also passed on the same single synthetic request:
+one real capture POST under double-click, deliberate response loss, two real
+status checks and verified inquiry-received handoff. The actual Calendly frame
+loaded. Independent tracker search after this test still returned one row, and
+Google health confirmed email/followups/events off with the synthetic gate false.
+See VERIFICATION.md for evidence and the remaining calendar/email boundaries.
+
 ## October 27 — current review state (supersedes older records below)
 
 The updated deployment is deliberately **preview**, with `FUNNEL_MODE=preview`,
