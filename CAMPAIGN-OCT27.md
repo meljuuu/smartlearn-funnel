@@ -62,9 +62,9 @@ providers are accepted. No team-size rejection rule was added.
 A request does not confirm an appointment. After **verified live capture**, the
 prospect can choose a time through the already supplied Calendly destination:
 https://calendly.com/smartlearn-sales/30min. Calendly must confirm the appointment.
-The October 27 review deployment is deliberately preview-only until the revised
-Google adapter is published and checked. Preview sends and saves nothing and
-does not load Calendly. Public inquiry/scheduling contact: sales@smartlearn.ca.
+The revised Google adapter has now been published and its minimal capture verified
+against the actual tracker. Public inquiry capture is enabled; local preview
+sends/saves nothing and does not load Calendly. Public inquiry/scheduling contact: sales@smartlearn.ca.
 Requested internal visibility: sales first, info@smartlearn.ca copied where
 configured. This does not identify the meeting host or authorize a sender.
 

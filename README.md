@@ -2,11 +2,12 @@
 
 Discovery funnel for businesses in Surrey and Langley. The October 27 review
 uses the new pain-point copy, people-free stock imagery and a shorter form.
-Cloudflare and local development currently run in **preview**, pending publication
-and acceptance of the revised Google adapter. Automatic email, follow-ups and
-provider events remain disabled. See [current setup](OCT27-SETUP.md) and
+Cloudflare inquiry capture is now **live**, after the user published the revised
+Google adapter and a real minimal inquiry passed concurrency/replay tests with
+exactly one independently verified tracker row. Local development remains preview.
+Automatic email, follow-ups and provider events remain disabled. See [current setup](OCT27-SETUP.md) and
 [campaign copy/testing plan](CAMPAIGN-OCT27.md). Existing signing and tracker
-connections are intact; they do not prove the new adapter has been deployed.
+connections are intact; the deployed adapter now reports the required October 27 contract.
 
 The following October 26 deployment notes describe the previous live iteration.
 Current October 27 preview/setup instructions take precedence.

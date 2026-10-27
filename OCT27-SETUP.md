@@ -1,5 +1,19 @@
 # October 27 — exact remaining setup and acceptance
 
+## Activation completed
+
+The user published the prepared Google adapter. Signed deployed health confirms
+the new contract. One minimal synthetic request passed three concurrent attempts,
+replay and independent tracker-row verification. Optional headcount/routing stayed
+blank. The test gate is reset false and the row is marked integration-test data
+to prevent future prospect mail. Public website capture is enabled on the user's
+instruction; email/followups/events remain disabled. Steps 1, 2 and website
+activation in step 5 are completed. The older blocker/preview notes below document
+the previous state; no further Google publication is needed for this form.
+
+Steps 3–4 (sender/notification settings and real calendar lifecycle testing) and
+business launch approvals remain separate pending work. No ads were launched.
+
 ## Verified current state and access limits
 
 The sales Workspace connection read the canonical campaign document and the

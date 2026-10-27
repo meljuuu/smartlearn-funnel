@@ -1,5 +1,20 @@
 # SmartLearn setup and launch handoff
 
+## Current activation — Google publication completed
+
+The user published the revised Code/Mail project. Deployed Google health reports
+the required `generic-2026-10-27` contract. A real minimal synthetic inquiry, three
+concurrent attempts and a replay produced exactly one independently verified
+tracker row. The row is labeled integration-test data; the synthetic gate reset
+false. Public Cloudflare capture is now enabled; local builds stay preview.
+Email, follow-ups and provider events remain off. Steps 1–2 and capture activation
+in OCT27-SETUP are completed; do not reinstall/rotate secrets or rerun initial
+setup. Remaining calendar-notification routing, sender testing and campaign
+approvals are separate from the now-working inquiry form.
+
+The earlier preview-hold description below is historical. Current rollback to
+preview is in CLOUDFLARE.md. A submitted inquiry is still not a booked appointment.
+
 ## October 27 — start here
 
 The current page uses generic business wording for Surrey/Langley and the

@@ -2,6 +2,27 @@
 
 Review URL: https://smartlearn-funnel.polarisjumel.workers.dev
 
+## Current: revised form enabled after Google publication
+
+The user published the prepared Google update and authorized working capture.
+Signed health now confirms `leadContract=generic-2026-10-27`, capture true and
+email/followups/events false. A controlled minimal inquiry through real signed
+`capture_v2` requests survived three concurrent attempts and a replay. Independent
+Sheet search found exactly one matching row (row 7), with optional fields blank.
+Only that synthetic row's Source/Notes were marked as integration-test data so
+it is excluded from campaign results and future prospect notifications. Historical
+records, headers, formulas, permissions and signing secrets were unchanged.
+
+`FUNNEL_MODE=live`, `CAPTURE_ENABLED=true`, `EVENTS_ENABLED=false`. Local builds
+still default to preview. The public form saves before success, then hands off to
+the supplied Calendly page; submitting does not book an appointment. Email,
+follow-ups and provider-event ingestion remain off. The earlier preview-hold
+instructions below are superseded by this activation.
+
+Rollback to the immediately preceding minimal-form preview deployment:
+`npx wrangler rollback e01f67b5-34ed-4f4c-8a05-49addf8fa08c`.
+This disables public capture again without changing Google secrets or records.
+
 ## October 27 — current review state (supersedes older records below)
 
 The updated deployment is deliberately **preview**, with `FUNNEL_MODE=preview`,

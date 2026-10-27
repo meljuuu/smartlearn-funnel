@@ -14,8 +14,8 @@
     "not_found_handling": "none"
   },
   "vars": {
-    "FUNNEL_MODE": "preview",
-    "CAPTURE_ENABLED": "false",
+    "FUNNEL_MODE": "live",
+    "CAPTURE_ENABLED": "true",
     "EVENTS_ENABLED": "false",
     "PRIVACY_POLICY_URL": "https://smartlearn-funnel.polarisjumel.workers.dev/privacy.html",
     "BOOKING_URL": "https://calendly.com/smartlearn-sales/30min",
